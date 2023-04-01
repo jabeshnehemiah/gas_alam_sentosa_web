@@ -25,7 +25,7 @@
     // Send the AJAX request
     $.ajax({
       type: 'POST',
-      url: './api/satuan_get.php',
+      url: './api/kategori_barang_get.php',
       success: (response) => {
         console.log(response)
         response = JSON.parse(response);
@@ -35,7 +35,7 @@
 
         // Add heading
         $('#heading').html(`
-          <h1>SATUAN</h1>
+          <h1>KATEGORI BARANG</h1>
           <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
           `);
 
@@ -142,7 +142,7 @@
         <div class="modal-content">
           <form id="input-form">
             <div class="modal-header">
-              <h5 class="modal-title">Tambah Data Satuan</h5>
+              <h5 class="modal-title">Tambah Data Kategori Barang</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -193,7 +193,7 @@
       // Send the AJAX request
       $.ajax({
         type: 'POST',
-        url: './api/satuan_add.php',
+        url: './api/kategori_barang_add.php',
         data: formData,
         success: response => {
           console.log(response);
