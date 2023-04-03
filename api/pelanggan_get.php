@@ -1,10 +1,11 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 include 'connection.php';
+session_start();
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $sql = "SELECT b.kode, b.nama, b.tipe, b.harga_beli, b.file_gambar, b.kode_acc, k.nama kategori, s.nama satuan FROM barangs b INNER JOIN kategori_barangs k ON b.kategori_barang_id = k.id INNER JOIN satuans s ON b.satuan_id = s.id";
+  $sql = "SELECT kode, nama_perusahaan, kontak_perusahaan, badan_usaha, nama_direktur, kontak_direktur, nama_pelanggan, ktp, npwp, provinsi, kota, alamat, kode_pos, status_piutang FROM pelanggans WHERE marketing_id = " . $_SESSION['id'];
   $stmt = $conn->prepare($sql);
   $stmt->execute();
   $res = $stmt->get_result();

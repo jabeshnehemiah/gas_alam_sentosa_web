@@ -18,6 +18,7 @@
   </div>
 </body>
 <script type="text/javascript">
+  
   const selects = ['roles', 'divisis', 'users'];
   let selectValues = {};
   let fillables;

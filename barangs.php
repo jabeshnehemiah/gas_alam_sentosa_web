@@ -2,11 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <?php include './head.php'; ?>
-<style>
-  #kode-input {
-    text-transform: uppercase;
-  }
-</style>
+<script src="./js/constants.js"></script>
 
 <body>
   <?php include './navbar.php'; ?>
@@ -18,15 +14,38 @@
   </div>
 </body>
 <script type="text/javascript">
-  const selects = ['kategori_barangs', 'satuans'];
-  let selectValues = {};
-  let fillables;
-  const numbers = ['harga_beli', 'kode_acc'];
-  const radios = {
-    'tipe': ['Persediaan', 'Jasa'],
-  }
+  let formInputs = {
+    'nama': {
+      'type': 'text',
+      'required': true
+    },
+    'tipe': {
+      'type': 'radio',
+      'data': tipeBarangs
+    },
+    'harga_beli': {
+      'type': 'number',
+      'required': true
+    },
+    'kode_acc': {
+      'type': 'number',
+      'required': true
+    },
+    'kategori_barang_id': {
+      'type': 'select',
+      'data': [],
+      'required': true
+    },
+    'satuan_id': {
+      'type': 'select',
+      'data': [],
+      'required': true
+    },
+
+  };
+  const relations = ['kategori_barangs', 'satuans'];
   $(document).ready(function() {
-    selects.forEach(table => {
+    relations.forEach(table => {
       loadSelect(table);
     });
 
@@ -46,7 +65,7 @@
       success: response => {
         response = JSON.parse(response);
         if (response.success) {
-          selectValues[table] = response.data;
+          formInputs[table.slice(0, -1).concat('_id')]['data'] = response.data;
         }
       },
       error: (jqXHR, textStatus, errorThrown) => {
@@ -65,8 +84,6 @@
       success: (response) => {
         response = JSON.parse(response);
         let html;
-
-        fillables = response.fillables;
 
         // Add heading
         $('#heading').html(`
@@ -96,8 +113,8 @@
 
           // Set head, foot
           keys.forEach(key => {
-            head += `<th>${key.toUpperCase()}</th>`;
-            foot += `<th>${key.toUpperCase()}</th>`;
+            head += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
+            foot += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
           });
 
           head += `
@@ -124,7 +141,7 @@
                   row += `<td>${datum[key]}</td>`;
                 }
               } else {
-                row += `<td>-</td>`;
+                row += `<td></td>`;
               }
             });
             row += `
@@ -197,82 +214,77 @@
         <div class="modal-content">
           <form id="input-form">
             <div class="modal-header">
-              <h5 class="modal-title">Tambah Data Barang</h5>
+              <h5 class="modal-title">Tambah Data Pelanggan</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
     `;
-    fillables.forEach(fillable => {
-      modalAdd += `
-      <div class="mb-4">
-        <label for="${fillable}-input">${fillable}</label>
-        <input type="text" id="${fillable}-input" name="${fillable}" class="form-control validate" required>
-      </div>
-      `;
-    });
-    numbers.forEach(number => {
-      modalAdd += `
-      <div class="mb-4">
-        <label for="${number}-input">${number.replace('_',' ')}</label>
-        <input type="number" id="${number}-input" name="${number}" class="form-control validate" required>
-      </div>
-      `;
-    })
-    selects.forEach(table => {
-      if (table == 'users') {
-        table = 'atasans';
-      }
-      modalAdd += `
-      <div class="mb-4">
-        <label for="${table}-input">${table.slice(0,-1).replace('_',' ')}</label>
-        <select class="browser-default custom-select" id="${table}-input"
-      `;
-      if (table == 'roles') {
-        modalAdd += 'required>';
-      } else {
-        modalAdd += '>';
-      }
-      modalAdd += `<option value="" selected hidden>--- PILIH ${table.toUpperCase().slice(0,-1).replace('_',' ')} ---</option>`;
 
-      if (table == 'atasans') {
-        table = 'users';
-      }
-      selectValues[table].forEach(value => {
-        modalAdd += `<option value="${value.id}">${value.nama}</option>`;
-      });
-
-      modalAdd += `
-        </select>
-      </div>
-      `;
-    });
-
-    for (let radio in radios) {
-      modalAdd += `
-      <div class="mb-4">
-        <p>${radio}
-      `;
-
-      radios[radio].forEach(value => {
+    for (const key in formInputs) {
+      if (formInputs[key]['type'] == 'text') {
         modalAdd += `
-        <div class="custom-control custom-radio custom-control-inline">
-          <input type="radio" class="custom-control-input" id="${value}" name="${radio}" required>
-          <label class="custom-control-label" for="${value}">${value}</label>
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <input type="text" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''} ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
         </div>
         `;
-      });
+      } else if (formInputs[key]['type'] == 'number') {
+        modalAdd += `
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <input type="number" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''} ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
+        </div>
+        `;
+      } else if (formInputs[key]['type'] == 'email') {
+        modalAdd += `
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <input type="email" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+        </div>
+        `;
+      } else if (formInputs[key]['type'] == 'select') {
+        modalAdd += `
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
+        `;
+        if (Array.isArray(formInputs[key]['data'])) {
+          if (typeof formInputs[key]['data'][0] == 'object') {
+            formInputs[key]['data'].forEach(datum => {
+              modalAdd += `<option value="${datum.id}">${datum.nama}</option>`;
+            });
+          } else {
+            formInputs[key]['data'].forEach(datum => {
+              modalAdd += `<option value="${datum}">${datum}</option>`;
+            });
+          }
+        }
+        modalAdd += `
+          </select>
+        </div>
+        `;
+      } else if (formInputs[key]['type'] == 'radio') {
+        modalAdd += `
+          <div class="mb-4">
+            <p>${key.replace(/_/g,' ')} ${formInputs[key]['required']?'<span class="red-text">*</span>':''}</p>
+          `;
 
-      modalAdd += `</div>`;
+        if (Array.isArray(formInputs[key]['data'])) {
+          formInputs[key]['data'].forEach(datum => {
+            modalAdd += `
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" class="custom-control-input" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+              <label class="custom-control-label" for="${datum}">${datum}</label>
+            </div>
+            `;
+          });
+        }
+        modalAdd += `</div>`;
+      }
     }
-
-    modalAdd += `
-    <div class="mb-4">
-      <label for="file_gambar-input">file gambar</label><br/>
-      <input type="file" id="file_gambar-input" name="file_gambar" accept="image/*" required>
-    </div>
-    `;
 
     // Append modal
     modalAdd += `
@@ -290,29 +302,21 @@
     $('.modal-container').html(modalAdd);
     $('#modalTambah').modal('show');
 
-
     // Add event listener for save button
     $('#input-form').submit((event) => {
       event.preventDefault();
 
       // Get inputs
       let inputs = {};
-      fillables.forEach(key => {
-        inputs[key] = $(`#${key}-input`).val();
-      });
-      numbers.forEach(key=>{
-        inputs[key]=$(`#${key}-input`).val();
-      });
-      selects.forEach(key => {
-        if (!$(`#${key}-input`).val() == "") {
-          inputs[key.slice(0, -1).concat('_id')] = $(`#${key}-input`).val();
+      for (const key in formInputs) {
+        if (key == 'kode') {
+          inputs[key] = $(`#${key}-input`).val().toUpperCase();
+        } else if (formInputs[key]['type'] == 'radio') {
+          inputs[key] = $(`input[name=${key}]:checked`).attr('id');
+        } else {
+          inputs[key] = $(`#${key}-input`).val();
         }
-      });
-      for (let radio in radios) {
-        inputs[radio] = $(`input[name=${radio}]:checked`).attr('id');
       }
-
-      console.log(inputs)
 
       // Get the form data
       const formData = {
@@ -322,7 +326,7 @@
       // Send the AJAX request
       $.ajax({
         type: 'POST',
-        url: './api/user_add.php',
+        url: './api/barang_add.php',
         data: formData,
         success: response => {
           console.log(response);
@@ -347,11 +351,12 @@
     // Send the AJAX request
     $.ajax({
       type: 'POST',
-      url: './api/user_get_one.php',
+      url: './api/barang_get_one.php',
       data: {
         'kode': kode,
       },
       success: response => {
+        console.log(response)
         response = JSON.parse(response);
         if (response.success) {
           let modalEdit = `
@@ -360,69 +365,90 @@
               <div class="modal-content">
                 <form id="edit-form">
                   <div class="modal-header">
-                    <h5 class="modal-title">Edit Data ${nama}</h5>
+                    <h5 class="modal-title">Ubah Data ${nama}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
                   </div>
                   <div class="modal-body">
           `;
-          fillables.forEach(fillable => {
-            modalEdit += `
-            <div class="mb-4">
-              <label for="${fillable}-input">${fillable}</label>
-              <input type="text" id="${fillable}-input" name="${fillable}" class="form-control validate" value="${response.data[fillable]}" required>
-            </div>
-            `;
-          });
-          selects.forEach(table => {
-            if (table == 'users') {
-              table = 'atasans';
-            }
-            modalEdit += `
-            <div class="mb-4">
-              <label for="${table}-input">${table.slice(0,-1)}</label>
-              <select class="browser-default custom-select" id="${table}-input"
-            `;
-            if (table == 'roles') {
-              modalEdit += ' required>';
-            } else {
-              modalEdit += '>';
-            }
 
-            if (table == 'atasans') {
-              table = 'users';
-            }
-
-            selectValues[table].forEach(value => {
-              if (table != 'users' || value.nama != nama) {
-                if (response.data[table.slice(0, -1)] == value.nama) {
-                  modalEdit += `<option value="${value.id}" selected>${value.nama}</option>`;
+          for (const key in formInputs) {
+            if (formInputs[key]['type'] == 'text') {
+              modalEdit += `
+              <div class="mb-4">
+                <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+                <input type="text" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}" ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
+              </div>
+              `;
+            } else if (formInputs[key]['type'] == 'number') {
+              modalEdit += `
+              <div class="mb-4">
+                <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+                <input type="number" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}" ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
+              </div>
+              `;
+            } else if (formInputs[key]['type'] == 'email') {
+              modalEdit += `
+              <div class="mb-4">
+                <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+                <input type="email" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}">
+              </div>
+              `;
+            } else if (formInputs[key]['type'] == 'select') {
+              modalEdit += `
+              <div class="mb-4">
+                <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+                <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+              `;
+              if (Array.isArray(formInputs[key]['data'])) {
+                if (typeof formInputs[key]['data'][0] == 'object') {
+                  formInputs[key]['data'].forEach(datum => {
+                    if (response.data[key] == datum) {
+                      modalEdit += `<option value="${datum.id}" selected>${datum.nama}</option>`;
+                    } else {
+                      modalEdit += `<option value="${datum.id}">${datum.nama}</option>`;
+                    }
+                  });
                 } else {
-                  modalEdit += `<option value="${value.id}">${value.nama}</option>`;
+                  formInputs[key]['data'].forEach(datum => {
+                    modalEdit += `<option value="${datum}" ${response.data[key]==datum? 'selected':''}>${datum}</option>`;
+                    if (!formInputs[key]['required']) {
+                      if (response.data[key]) {
+                        modalEdit += `<option value="" selected>Tidak ada</option>`;
+                      } else {
+                        modalEdit += `<option value="">Tidak ada</option>`;
+                      }
+                    }
+                  });
                 }
               }
-            });
 
-            if (table == 'users') {
-              table = 'atasans';
-            }
+              modalEdit += `
+                </select>
+              </div>
+              `;
+            } else if (formInputs[key]['type'] == 'radio') {
+              modalEdit += `
+              <div class="mb-4">
+                <p>${key.replace(/_/g,' ')} ${formInputs[key]['required']?'<span class="red-text">*</span>':''}</p>
+              `;
 
-            if (table != 'roles') {
-              if (response.data[table.slice(0, -1)] == null) {
-                modalEdit += `<option value="" selected>Tidak ada</option>`;
-              } else {
-                modalEdit += `<option value="">Tidak ada</option>`;
-
+              if (Array.isArray(formInputs[key]['data'])) {
+                formInputs[key]['data'].forEach(datum => {
+                  modalEdit += `
+                  <div class="custom-control custom-radio custom-control-inline">
+                    <input type="radio" class="custom-control-input" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''}  ${response.data[key]==datum?'checked':''}>
+                    <label class="custom-control-label" for="${datum}">${datum}</label>
+                  </div>
+                  `;
+                });
               }
+              modalEdit += `</div>`;
             }
+          }
 
-            modalEdit += `
-              </select>
-            </div>
-            `;
-          });
-
+          // Append modal
           modalEdit += `
                   </div>
                   <div class="modal-footer">
@@ -434,30 +460,40 @@
             </div>
           </div>
           `;
+
           $('.modal-container').html(modalEdit);
-          response.fillables.forEach(key => {
-            $(`#${key}-edit`).trigger('change');
-          });
           $('#modalUbah').modal('show');
+
+          $('#ktp-input').keyup(() => {
+            $('#npwp-input').val($('#ktp-input').val());
+          })
+
+          $('#provinsi-input').change(() => {
+            const selKota = $('#kota-input');
+            let provinsi = $('#provinsi-input').find(':selected').val();
+            console.log(provinsi)
+            selKota.empty();
+            selKota.append('<option value="" selected hidden>--- PILIH KOTA ---</option>');
+            alamats[provinsi].forEach(kota => {
+              selKota.append(`<option value="${kota}">${kota}</option>`);
+            });
+            selKota.removeAttr('disabled');
+          });
 
           $('#edit-form').submit(event => {
             event.preventDefault();
 
             // Get inputs
             let inputs = {};
-            fillables.forEach(key => {
-              inputs[key] = $(`#${key}-input`).val();
-            });
-            selects.forEach(key => {
-              if (key == 'users') {
-                key = 'atasans';
-              }
-              if (!$(`#${key}-input`).val() == "") {
-                inputs[key.slice(0, -1).concat('_id')] = $(`#${key}-input`).val();
+            for (const key in formInputs) {
+              if (key == 'kode') {
+                inputs[key] = $(`#${key}-input`).val().toUpperCase();
+              } else if (formInputs[key]['type'] == 'radio') {
+                inputs[key] = $(`input[name=${key}]:checked`).attr('id');
               } else {
-                inputs[key.slice(0, -1).concat('_id')] = null;
+                inputs[key] = $(`#${key}-input`).val();
               }
-            });
+            }
 
             // Get the form data
             const formData = {
@@ -468,7 +504,7 @@
             // Send the AJAX request
             $.ajax({
               type: 'POST',
-              url: './api/user_edit.php',
+              url: './api/pelanggan_edit.php',
               data: formData,
               success: response => {
                 response = JSON.parse(response);
