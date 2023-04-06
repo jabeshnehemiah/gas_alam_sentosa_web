@@ -5,7 +5,7 @@ session_start();
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $sql = "SELECT kode, nama_perusahaan, kontak_perusahaan, badan_usaha, nama_direktur, kontak_direktur, nama_pelanggan, ktp, npwp, provinsi, kota, alamat, kode_pos, status_piutang FROM pelanggans WHERE marketing_id = " . $_SESSION['id'];
+  $sql = "SELECT p.id, p.kode, p.nama_perusahaan, p.kontak_perusahaan, p.badan_usaha, p.nama_direktur, p.kontak_direktur, p.nama_pelanggan, p.ktp, p.npwp, p.provinsi, p.kota, p.alamat, p.kode_pos, p.status_piutang, u.kode marketing FROM pelanggans p INNER JOIN users u ON p.marketing_id = u.id WHERE p.marketing_id = " . $_SESSION['id'];
   $stmt = $conn->prepare($sql);
   $stmt->execute();
   $res = $stmt->get_result();

@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $kode = $_POST['kode'];
 
   // Get table data with prepared statement
-  $sql = "SELECT kode, nama, tipe, harga_beli, kode_acc, kategori_barang_id, satuan_id FROM barangs WHERE kode = ?";
+  $sql = "SELECT nama, tipe, harga_beli, kode_acc, kategori_barang_id, satuan_id FROM barangs WHERE kode = ?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param('s', $kode);
   $stmt->execute();

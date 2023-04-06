@@ -8,18 +8,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $username = $_POST['username'];
   $password = $_POST['password'];
 
-  $sql = "SELECT u.id, u.nama, r.nama role, d.nama divisi FROM users u INNER JOIN roles r ON u.role_id = r.id LEFT JOIN divisis d ON u.divisi_id = d.id WHERE username=? AND password=?";
+  $sql = "SELECT u.id, u.kode, u.nama, r.nama role, d.nama divisi FROM users u INNER JOIN roles r ON u.role_id = r.id LEFT JOIN divisis d ON u.divisi_id = d.id WHERE username=? AND password=?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param('ss', $username, $password);
   $stmt->execute();
   $res = $stmt->get_result();
 
   $id;
+  $kode;
   $nama;
   $role;
   $divisi;
   while ($row = $res->fetch_assoc()) {
     $id = $row['id'];
+    $kode = $row['kode'];
     $nama = $row['nama'];
     $role = $row['role'];
     $divisi = $row['divisi'];
@@ -32,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     session_start();
     // Set session variable
     $_SESSION['id'] = $id;
+    $_SESSION['kode'] = $kode;
     $_SESSION['username'] = $username;
     $_SESSION['nama'] = $nama;
     $_SESSION['role'] = $role;

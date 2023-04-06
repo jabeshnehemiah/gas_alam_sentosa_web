@@ -1,6 +1,7 @@
 const tipeBarangs = ['Persediaan', 'Jasa'];
 const badanUsahas = ['PT','CV','UD'];
 const statusPiutangs = ['Lancar','Tidak Lancar'];
+const statusPelanggans = ['Progress','Survey','Prepare','Installed','Uninstalled'];
 const alamats = {
   'Aceh': [
     'Simeulue',

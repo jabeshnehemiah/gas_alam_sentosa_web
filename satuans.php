@@ -13,7 +13,12 @@
   </div>
 </body>
 <script type="text/javascript">
-  let fillables;
+  let formInputs = {
+    'nama': {
+      'type': 'text',
+      'required': true
+    }
+  }
   $(document).ready(function() {
     loadPage();
 
@@ -140,23 +145,79 @@
     <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-          <form id="input-form">
+          <form id="input-form" enctype="multipart/form-data">
             <div class="modal-header">
-              <h5 class="modal-title">Tambah Data Satuan</h5>
+              <h5 class="modal-title">Tambah Data Pelanggan</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
     `;
-    fillables.forEach(fillable => {
-      modalAdd += `
-      <div class="mb-4">
-        <label for="${fillable}-input">${fillable}</label>
-        <input type="text" id="${fillable}-input" name="${fillable}" class="form-control validate" required>
-      </div>
-      `;
-    });
+
+    for (const key in formInputs) {
+      if (formInputs[key]['type'] == 'text') {
+        modalAdd += `
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <input type="text" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''} ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
+        </div>
+        `;
+      } else if (formInputs[key]['type'] == 'number') {
+        modalAdd += `
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <input type="number" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''} ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
+        </div>
+        `;
+      } else if (formInputs[key]['type'] == 'email') {
+        modalAdd += `
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <input type="email" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+        </div>
+        `;
+      } else if (formInputs[key]['type'] == 'select') {
+        modalAdd += `
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
+        `;
+        if (Array.isArray(formInputs[key]['data'])) {
+          if (typeof formInputs[key]['data'][0] == 'object') {
+            formInputs[key]['data'].forEach(datum => {
+              modalAdd += `<option value="${datum.id}">${datum.nama}</option>`;
+            });
+          } else {
+            formInputs[key]['data'].forEach(datum => {
+              modalAdd += `<option value="${datum}">${datum}</option>`;
+            });
+          }
+        }
+        modalAdd += `
+          </select>
+        </div>
+        `;
+      } else if (formInputs[key]['type'] == 'radio') {
+        modalAdd += `
+          <div class="mb-4">
+            <p>${key.replace(/_/g,' ')} ${formInputs[key]['required']?'<span class="red-text">*</span>':''}</p>
+          `;
+
+        if (Array.isArray(formInputs[key]['data'])) {
+          formInputs[key]['data'].forEach(datum => {
+            modalAdd += `
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" class="custom-control-input" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+              <label class="custom-control-label" for="${datum}">${datum}</label>
+            </div>
+            `;
+          });
+        }
+        modalAdd += `</div>`;
+      }
+    }
 
     // Append modal
     modalAdd += `
@@ -174,27 +235,19 @@
     $('.modal-container').html(modalAdd);
     $('#modalTambah').modal('show');
 
-
     // Add event listener for save button
     $('#input-form').submit((event) => {
       event.preventDefault();
 
-      // Get inputs
-      let inputs = {};
-      fillables.forEach(key => {
-        inputs[key] = $(`#${key}-input`).val();
-      });
-
-      // Get the form data
-      const formData = {
-        'inputs': inputs
-      };
+      const formData = new FormData(document.getElementById('input-form'));
 
       // Send the AJAX request
       $.ajax({
         type: 'POST',
         url: './api/satuan_add.php',
         data: formData,
+        contentType: false,
+        processData: false,
         success: response => {
           console.log(response);
           response = JSON.parse(response);

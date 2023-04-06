@@ -1,18 +1,24 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 include 'connection.php';
+session_start();
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $sql = "SELECT b.id, b.kode, b.nama, b.tipe, b.harga_beli, b.file_gambar gambar, b.kode_acc, k.nama kategori, s.nama satuan FROM barangs b INNER JOIN kategori_barangs k ON b.kategori_barang_id = k.id INNER JOIN satuans s ON b.satuan_id = s.id";
+  // Get the id from the request
+  $id = $_POST['id'];
+
+  // Get table data with prepared statement
+  $sql = "SELECT * FROM penawaran_barangs WHERE id = ?";
   $stmt = $conn->prepare($sql);
+  $stmt->bind_param('s', $id);
   $stmt->execute();
   $res = $stmt->get_result();
 
-  $data = [];
+  $data;
   while ($row = $res->fetch_assoc()) {
     // Put data into array
-    $data[] = $row;
+    $data = $row;
   }
   $response = ['success' => true, 'message' => 'Berhasil', 'data' => $data];
   echo json_encode($response);

@@ -5,7 +5,7 @@ include 'connection.php';
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Get the table from the request
-  $kodeInit = $_POST['kode'];
+  $id = $_POST['id'];
 
   // Get data from the request
   $inputs = $_POST['inputs'];
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Prepare SQL
   $placeholder = '';
   $params = '';
-  $sql = "UPDATE pelanggans SET ";
+  $sql = "UPDATE pipeline_marketings SET ";
   for ($i = 0; $i < count($inputs); $i++) {
     $key = $keys[$i];
     if ($i == count($inputs) - 1) {
@@ -29,15 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $params .= 's';
   }
-  $sql .= "WHERE kode = '$kodeInit'";
+  $sql .= "WHERE id = '$id'";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param($params, ...$values);
   $stmt->execute();
 
   if ($stmt->affected_rows > 0) {
-    $response = ['success' => true, 'message' => "Berhasil mengubah data $kodeInit."];
+    $response = ['success' => true, 'message' => "Berhasil mengubah data."];
   } else {
-    $response = ['success' => false, 'message' => "Gagal mengubah data $kodeInit."];
+    $response = ['success' => false, 'message' => "Gagal mengubah data."];
   }
 
   echo json_encode($response);
