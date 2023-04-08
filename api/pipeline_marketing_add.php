@@ -1,12 +1,14 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 include 'connection.php';
+include 'generate_kode.php';
 session_start();
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Get data from the request
   $inputs = $_POST['inputs'];
+  $inputs['kode'] = generateKode('pipeline_marketings', 4, $conn);
 
   // Get keys
   $keys = array_keys($inputs);

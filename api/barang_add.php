@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   $error = "";
   if (!$_FILES['file_gambar']['size'] == 0) {
-    $target_dir = "../img/barang/";
+    $target_dir = "../files/barang/";
     $fileType = strtolower(pathinfo($_FILES['file_gambar']['name'], PATHINFO_EXTENSION));
     $target_file = $_POST['kode'] . '.' . $fileType;
     $uploadOk = 1;

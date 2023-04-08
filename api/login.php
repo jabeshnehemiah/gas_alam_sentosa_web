@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $username = $_POST['username'];
   $password = $_POST['password'];
 
-  $sql = "SELECT u.id, u.kode, u.nama, r.nama role, d.nama divisi FROM users u INNER JOIN roles r ON u.role_id = r.id LEFT JOIN divisis d ON u.divisi_id = d.id WHERE username=? AND password=?";
+  $sql = "SELECT u.id, u.kode, u.nama, u.role_id role, d.nama divisi FROM users u LEFT JOIN divisis d ON u.divisi_id = d.id WHERE username=? AND password=?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param('ss', $username, $password);
   $stmt->execute();
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $row['id'];
     $kode = $row['kode'];
     $nama = $row['nama'];
-    $role = $row['role'];
+    $role = intval($row['role']);
     $divisi = $row['divisi'];
   }
 

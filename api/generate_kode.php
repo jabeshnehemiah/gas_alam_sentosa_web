@@ -33,6 +33,30 @@ function generateKode($table, $length, $conn, $kategori_barang = null, $satuan =
         $id = intval($row['id']) + 1;
       }
       return "PWR/" . $_SESSION['kode'] . "/$year/" . str_pad($month, 2, "0", STR_PAD_LEFT) . "/" . str_pad(strval($id), $length, "0", STR_PAD_LEFT);
+    case 'pipeline_marketings':
+      $sql = "SELECT COUNT(id) id FROM pipeline_marketings WHERE MONTH(tanggal_dibuat) = $month AND YEAR(tanggal_dibuat) = $year AND marketing_id = " . $_SESSION['id'];
+      $stmt = $conn->prepare($sql);
+      $stmt->execute();
+      $res = $stmt->get_result();
+
+      $id = 0;
+      while ($row = $res->fetch_assoc()) {
+        // Put data
+        $id = intval($row['id']) + 1;
+      }
+      return "PM/" . $_SESSION['kode'] . "/$year/" . str_pad($month, 2, "0", STR_PAD_LEFT) . "/" . str_pad(strval($id), $length, "0", STR_PAD_LEFT);
+    case 'request_orders':
+      $sql = "SELECT COUNT(id) id FROM request_orders WHERE MONTH(tanggal_dibuat) = $month AND YEAR(tanggal_dibuat) = $year AND marketing_id = " . $_SESSION['id'];
+      $stmt = $conn->prepare($sql);
+      $stmt->execute();
+      $res = $stmt->get_result();
+
+      $id = 0;
+      while ($row = $res->fetch_assoc()) {
+        // Put data
+        $id = intval($row['id']) + 1;
+      }
+      return "RO/" . $_SESSION['kode'] . "/$year/" . str_pad($month, 2, "0", STR_PAD_LEFT) . "/" . str_pad(strval($id), $length, "0", STR_PAD_LEFT);
     default:
       $sql = "SELECT MAX(id) id FROM $table";
       $stmt = $conn->prepare($sql);
