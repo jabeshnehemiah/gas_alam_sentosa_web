@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 06, 2023 at 11:06 AM
+-- Generation Time: Apr 08, 2023 at 08:06 AM
 -- Server version: 10.4.27-MariaDB
--- PHP Version: 8.0.25
+-- PHP Version: 8.2.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -194,6 +194,7 @@ INSERT INTO `penawaran_barangs` (`id`, `kode`, `harga_jual`, `diskon`, `biaya_ta
 
 CREATE TABLE `pipeline_marketings` (
   `id` int(11) NOT NULL,
+  `kode` varchar(45) NOT NULL,
   `pemakaian` int(11) DEFAULT NULL,
   `tanggal_dibuat` date DEFAULT current_timestamp(),
   `tanggal_survey` date DEFAULT NULL,
@@ -207,8 +208,9 @@ CREATE TABLE `pipeline_marketings` (
 -- Dumping data for table `pipeline_marketings`
 --
 
-INSERT INTO `pipeline_marketings` (`id`, `pemakaian`, `tanggal_dibuat`, `tanggal_survey`, `tanggal_instalasi`, `status_pelanggan`, `detail_pelanggan_id`, `marketing_id`) VALUES
-(3, 10, '2023-04-06', '2023-03-29', '2023-04-08', 'Progress', 6, 1);
+INSERT INTO `pipeline_marketings` (`id`, `kode`, `pemakaian`, `tanggal_dibuat`, `tanggal_survey`, `tanggal_instalasi`, `status_pelanggan`, `detail_pelanggan_id`, `marketing_id`) VALUES
+(3, 'PM/IT/2023/04/0001', 10, '2023-04-06', '2023-03-29', '2023-04-08', 'Progress', 6, 1),
+(4, 'PM/IT/2023/04/0002', 3, '2023-04-08', '2023-04-04', '2023-04-03', 'Progress', 6, 1);
 
 -- --------------------------------------------------------
 
@@ -248,8 +250,22 @@ CREATE TABLE `request_orders` (
   `detail_pelanggan_id` int(11) NOT NULL,
   `barang_id` int(11) NOT NULL,
   `marketing_id` int(11) NOT NULL,
-  `pipeline_marketing_id` int(11) DEFAULT NULL
+  `pipeline_marketing_id` int(11) DEFAULT NULL,
+  `manager_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `request_orders`
+--
+
+INSERT INTO `request_orders` (`id`, `kode`, `tanggal_dibuat`, `kuantitas`, `tanggal_kirim`, `no_po`, `tanggal_po`, `file_po`, `aktif`, `detail_pelanggan_id`, `barang_id`, `marketing_id`, `pipeline_marketing_id`, `manager_id`) VALUES
+(2, 'RO/IT/2023/04/0001', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', NULL, 1, 6, 4, 1, 3, 1),
+(3, 'RO/IT/2023/04/0002', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', NULL, NULL, 6, 5, 1, 3, 1),
+(4, 'RO/IT/2023/04/0003', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', NULL, NULL, 6, 5, 1, 3, NULL),
+(5, 'RO/IT/2023/04/0004', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', 'RO_IT_2023_04_0004.png', NULL, 6, 5, 1, 3, NULL),
+(6, 'RO/IT/2023/04/0005', '2023-04-08', 123, '2023-04-06', '89483', '2023-04-03', 'RO_IT_2023_04_0005.pdf', NULL, 6, 4, 1, 3, NULL),
+(7, 'RO/IT/2023/04/0006', '2023-04-08', 45, '2023-04-04', '', '0000-00-00', NULL, NULL, 6, 6, 1, 3, NULL),
+(8, 'RO/IT/2023/04/0007', '2023-04-08', 622, '2023-04-12', '', '0000-00-00', NULL, 1, 6, 4, 1, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -324,8 +340,7 @@ CREATE TABLE `surat_jalans` (
   `kuantitas` int(11) DEFAULT NULL,
   `tanggal_kirim` date DEFAULT NULL,
   `nama_driver` varchar(45) DEFAULT NULL,
-  `request_orders_id` int(11) NOT NULL,
-  `detail_pelanggans_id` int(11) NOT NULL,
+  `request_order_id` int(11) NOT NULL,
   `marketing_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -352,9 +367,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `kode`, `nama`, `username`, `password`, `aktif`, `role_id`, `divisi_id`, `atasan_id`) VALUES
-(1, 'IT', 'IT Superadmin', 'superadmin', 'superadmin', 1, 1, NULL, NULL),
+(1, 'IT', 'IT Superadmin', 'superadmin', 'superadmin', 1, 3, NULL, NULL),
 (2, 'DUM', 'Marketing Dummy', 'marketing', 'marketing', 1, 1, 1, NULL),
-(5, 'coba', 'coba', 'coba', 'password', 0, 2, NULL, 1);
+(5, 'coba', 'coba', 'coba', 'password', 0, 4, NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -413,6 +428,7 @@ ALTER TABLE `penawaran_barangs`
 --
 ALTER TABLE `pipeline_marketings`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `kode` (`kode`),
   ADD KEY `fk_pipeline_marketings_detail_pelanggans1_idx` (`detail_pelanggan_id`),
   ADD KEY `fk_pipeline_marketings_users1_idx` (`marketing_id`);
 
@@ -431,7 +447,8 @@ ALTER TABLE `request_orders`
   ADD KEY `fk_request_orders_detail_pelanggans1_idx` (`detail_pelanggan_id`),
   ADD KEY `fk_request_orders_pipeline_marketings1_idx` (`pipeline_marketing_id`),
   ADD KEY `fk_request_orders_users1_idx` (`marketing_id`),
-  ADD KEY `fk_request_orders_barangs1_idx` (`barang_id`);
+  ADD KEY `fk_request_orders_barangs1_idx` (`barang_id`),
+  ADD KEY `fk_request_orders_users2_idx` (`manager_id`);
 
 --
 -- Indexes for table `roles`
@@ -452,9 +469,8 @@ ALTER TABLE `satuans`
 ALTER TABLE `surat_jalans`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `kode_UNIQUE` (`kode`),
-  ADD KEY `fk_surat_jalans_request_orders1_idx` (`request_orders_id`),
-  ADD KEY `fk_surat_jalans_detail_pelanggans1_idx` (`detail_pelanggans_id`),
-  ADD KEY `fk_surat_jalans_users1_idx` (`marketing_id`);
+  ADD KEY `fk_surat_jalans_users1_idx` (`marketing_id`),
+  ADD KEY `fk_surat_jalans_request_orders1_idx` (`request_order_id`);
 
 --
 -- Indexes for table `users`
@@ -510,7 +526,7 @@ ALTER TABLE `penawaran_barangs`
 -- AUTO_INCREMENT for table `pipeline_marketings`
 --
 ALTER TABLE `pipeline_marketings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `ppns`
@@ -522,7 +538,7 @@ ALTER TABLE `ppns`
 -- AUTO_INCREMENT for table `request_orders`
 --
 ALTER TABLE `request_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -594,14 +610,14 @@ ALTER TABLE `request_orders`
   ADD CONSTRAINT `fk_request_orders_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_request_orders_detail_pelanggans1` FOREIGN KEY (`detail_pelanggan_id`) REFERENCES `detail_pelanggans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_request_orders_pipeline_marketings1` FOREIGN KEY (`pipeline_marketing_id`) REFERENCES `pipeline_marketings` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_request_orders_users1` FOREIGN KEY (`marketing_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `fk_request_orders_users1` FOREIGN KEY (`marketing_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_request_orders_users2` FOREIGN KEY (`manager_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `surat_jalans`
 --
 ALTER TABLE `surat_jalans`
-  ADD CONSTRAINT `fk_surat_jalans_detail_pelanggans1` FOREIGN KEY (`detail_pelanggans_id`) REFERENCES `detail_pelanggans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_surat_jalans_request_orders1` FOREIGN KEY (`request_orders_id`) REFERENCES `request_orders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_surat_jalans_request_orders1` FOREIGN KEY (`request_order_id`) REFERENCES `request_orders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_surat_jalans_users1` FOREIGN KEY (`marketing_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
