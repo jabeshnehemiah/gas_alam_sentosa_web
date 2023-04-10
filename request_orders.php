@@ -53,9 +53,11 @@ include './head.php';
     },
     'no_po': {
       'type': 'number',
+      'required': true
     },
     'tanggal_po': {
-      'type': 'date'
+      'type': 'date',
+      'required': true
     },
     'file_po': {
       'type': 'file'
@@ -188,7 +190,7 @@ include './head.php';
             keys.forEach(key => {
               if (datum[key] != null) {
                 if (key == 'file_po') {
-                  row += `<td><a class="btn btn-primary btn-sm m-0 px-3" target="_blank" href="./files/po/${datum[key]}">${datum[key]}</a></td>`;
+                  row += `<td><a class="btn btn-link p-0 text-primary" target="_blank" href="./files/po/${datum[key]}?t=${Date.now()}">${datum[key]}</a></td>`;
                 } else if (key == 'aktif') {
                   row += `<td>${datum[key]=='1'?'Aktif':'Draft'}</td>`;
                 } else if (key != 'id' && key != 'detail_pelanggan') {
@@ -203,8 +205,8 @@ include './head.php';
               <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}','${datum['pelanggan']}','${datum['detail_pelanggan']}')"><i class="fas fa-edit"></i></button>
             `;
             <?php if ($_SESSION['role'] < 4) { ?>
-              if (datum['divalidasi_oleh'] == null && datum['aktif']==1) {
-                row += `<button type="button" class="btn btn-primary btn-sm m-0 px-3 edit-button" onClick="validateModal('${datum['kode']}')"><i class="fas fa-check-circle"></i></button>`;
+              if (datum['divalidasi_oleh'] == null && datum['aktif'] == 1) {
+                row += `<button type="button" class="btn btn-success btn-sm m-0 px-3 validate-button" onClick="validateModal('${datum['kode']}')"><i class="fas fa-check-circle"></i></button>`;
               }
             <?php } ?>
             row += '</td>';
@@ -463,6 +465,17 @@ include './head.php';
       formData.delete('pelanggan_id');
       formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
       formData.append('aktif', 0);
+      const inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          if (!input.checked) {
+            formData.set(input.name, '');
+          }
+        } else if (input.value === '') {
+          formData.set(input.name, '');
+        }
+      });
+
 
       // Send the AJAX request
       $.ajax({
@@ -498,6 +511,17 @@ include './head.php';
       formData.delete('pelanggan_id');
       formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
       formData.append('aktif', 1);
+      const inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          if (!input.checked) {
+            formData.set(input.name, '');
+          }
+        } else if (input.value === '') {
+          formData.set(input.name, '');
+        }
+      });
+
 
       // Send the AJAX request
       $.ajax({

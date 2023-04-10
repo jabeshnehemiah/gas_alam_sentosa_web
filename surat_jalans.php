@@ -5,9 +5,13 @@
 include './head.php';
 ?>
 <script src="./js/constants.js"></script>
+<script src="./js/html2pdf.min.js"></script>
 <style>
   #kode-input {
     text-transform: uppercase;
+  }
+  #pdf table, th, tr,td{
+    border:1px solid black !important;
   }
 </style>
 
@@ -18,6 +22,67 @@ include './head.php';
     <div class="d-flex justify-content-between" id="heading"></div>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <div class="pdf-container">
+      <div id="pdf" class="p-5 border" style="font-family: monospace" ;>
+        <div class="d-flex justify-content-between pb-3">
+          <div>
+            <h4>PT Gas Alam Sentosa</h4>
+            <h6>Ruko CBD Puncak 7F Toll</h6>
+            <h6>Jl. Keramat I, Surabaya, Jawa Timur 60229</h6>
+          </div>
+          <div class="text-right">
+            <h2>SURAT JALAN</h2>
+            <h4 id="pdf-kode">SJ/IT/2023/04/0001</h4>
+          </div>
+        </div>
+        <hr class="border-dark">
+        <div class="d-flex justify-content-between pt-3 pb-5">
+          <div>
+            <h5>Kepada Yth.</h5>
+            <h6>PT Perusahaan Dummy</h6>
+            <h6>Jl. Dummy Detail, Surabaya, Jawa Timur 60222</h6>
+            <h6>08123456789</h6>
+          </div>
+          <div>
+            <h5>&nbsp;</h5>
+            <h6>Nomor PO : 12345</h6>
+            <h6>Tanggal &nbsp;: 2023-04-10</h6>
+          </div>
+        </div>
+        <div>
+          <table class="table" style="border: 1px solid black;">
+            <thead>
+              <tr>
+                <th scope="col">No</th>
+                <th scope="col">Barang</th>
+                <th scope="col">Jumlah</th>
+                <th scope="col">Satuan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">1</th>
+                <td>Sit</td>
+                <td>Amet</td>
+                <td>Consectetur</td>
+              </tr>
+              <tr>
+                <th scope="row">2</th>
+                <td>Adipisicing</td>
+                <td>Elit</td>
+                <td>Sint</td>
+              </tr>
+              <tr>
+                <th scope="row">3</th>
+                <td>Hic</td>
+                <td>Fugiat</td>
+                <td>Temporibus</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 <script type="text/javascript">
@@ -69,7 +134,7 @@ include './head.php';
     // Send the AJAX request
     $.ajax({
       type: 'POST',
-      url: './api/surat_jalans_get.php',
+      url: './api/surat_jalan_get.php',
       success: (response) => {
         response = JSON.parse(response);
         let html;
@@ -135,7 +200,8 @@ include './head.php';
             });
             row += `
             <td>
-              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['id']}','${datum['pelanggan']}')"><i class="fas fa-edit"></i></button>
+              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}')"><i class="fas fa-edit"></i></button>
+              <button type="button" class="btn btn-primary btn-sm m-0 px-3 print-button" onClick="printPdf('${datum['kode']}')"><i class="fas fa-file-pdf"></i></button>
             </td>
             `;
             row += `</tr>`;
@@ -203,7 +269,7 @@ include './head.php';
         <div class="modal-content">
           <form id="input-form">
             <div class="modal-header">
-              <h5 class="modal-title">Tambah Pipeline Marketing</h5>
+              <h5 class="modal-title">Tambah Surat Jalan</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -262,20 +328,14 @@ include './head.php';
         modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
           <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
           if (typeof formInputs[key]['data'][0] == 'object') {
-            if (key == 'pelanggan_id') {
-              formInputs[key]['data'].forEach(datum => {
-                modalAdd += `<option value="${datum.kode}">${datum.nama_perusahaan}</option>`;
-              });
-            } else {
-              formInputs[key]['data'].forEach(datum => {
-                modalAdd += `<option value="${datum.id}">${datum.nama}</option>`;
-              });
-            }
+            formInputs[key]['data'].forEach(datum => {
+              modalAdd += `<option value="${datum.id}">${datum.kode}</option>`;
+            });
           } else {
             formInputs[key]['data'].forEach(datum => {
               modalAdd += `<option value="${datum}">${datum}</option>`;
@@ -352,30 +412,28 @@ include './head.php';
     $('#input-form').submit((event) => {
       event.preventDefault();
 
-      // Get inputs
-      let inputs = {};
-      for (const key in formInputs) {
-        if (key != 'pelanggan_id') {
-          if (formInputs[key]['type'] == 'radio' || formInputs[key]['type'] == 'checkbox') {
-            inputs[key] = $(`input[name=${key}]:checked`).attr('id');
-          } else {
-            inputs[key] = $(`#${key}-input`).val();
-          }
-        }
-      }
-      inputs['marketing_id'] = <?php echo $_SESSION['id']; ?>;
-
       // Get the form data
-      const formData = {
-        'inputs': inputs
-      };
-      console.log(formData)
+      const form = document.getElementById('input-form')
+      const formData = new FormData(form);
+      formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
+      const inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          if (!input.checked) {
+            formData.set(input.name, '');
+          }
+        } else if (input.value === '') {
+          formData.set(input.name, '');
+        }
+      });
 
       // Send the AJAX request
       $.ajax({
         type: 'POST',
-        url: './api/penawaran_barang_add.php',
+        url: './api/surat_jalan_add.php',
         data: formData,
+        contentType: false,
+        processData: false,
         success: response => {
           console.log(response);
           response = JSON.parse(response);
@@ -395,33 +453,24 @@ include './head.php';
     });
   }
 
-  const editModal = (id, kode) => {
+  const editModal = (kode) => {
     // Send the AJAX request
     $.ajax({
       type: 'POST',
-      url: './api/penawaran_barang_get_one.php',
+      url: './api/surat_jalan_get_one.php',
       data: {
-        'id': id,
+        'kode': kode,
       },
       success: response => {
         response = JSON.parse(response);
         if (response.success) {
-          $.ajax({
-            type: 'POST',
-            url: './api/detail_pelanggan_get.php',
-            data: {
-              'kode': kode
-            },
-            success: response1 => {
-              response1 = JSON.parse(response1);
-
-              let modalEdit = `
+          let modalEdit = `
           <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="edit-form">
                   <div class="modal-header">
-                    <h5 class="modal-title">Ubah Pipeline Marketing</h5>
+                    <h5 class="modal-title">Ubah ${response.data.kode}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -429,116 +478,108 @@ include './head.php';
                   <div class="modal-body">
           `;
 
-              for (const key in formInputs) {
-                if (formInputs[key]['type'] == 'text') {
-                  modalEdit += `
+          for (const key in formInputs) {
+            if (formInputs[key]['type'] == 'text') {
+              modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
                 <input type="text" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}" ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
               </div>
               `;
-                } else if (formInputs[key]['type'] == 'number') {
-                  modalEdit += `
+            } else if (formInputs[key]['type'] == 'number') {
+              modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
                 <input type="number" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}" ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
               </div>
               `;
-                } else if (formInputs[key]['type'] == 'email') {
-                  modalEdit += `
+            } else if (formInputs[key]['type'] == 'email') {
+              modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
                 <input type="email" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}">
               </div>
               `;
-                } else if (formInputs[key]['type'] == 'date') {
-                  modalEdit += `
+            } else if (formInputs[key]['type'] == 'date') {
+              modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
                 <input type="date" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}">
               </div>
               `;
-                } else if (formInputs[key]['type'] == 'checkbox') {
-                  modalEdit += `
+            } else if (formInputs[key]['type'] == 'checkbox') {
+              modalEdit += `
                   <div class="mb-4">
                     <p>${key.replace(/_/g,' ')} ${formInputs[key]['required']?'<span class="red-text">*</span>':''}</p>
                   `;
-                  if (Array.isArray(formInputs[key]['data'])) {
-                    if (typeof formInputs[key]['data'][0] == 'object') {
-                      formInputs[key]['data'].forEach(datum => {
-                        console.log("check " + response.data[key])
-                        modalEdit += `
+              if (Array.isArray(formInputs[key]['data'])) {
+                if (typeof formInputs[key]['data'][0] == 'object') {
+                  formInputs[key]['data'].forEach(datum => {
+                    console.log("check " + response.data[key])
+                    modalEdit += `
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="${datum.id}" name="${key}" value="${datum.id}" ${response.data[key]==datum.id?'checked':''}>
                             <label class="custom-control-label" for="${datum.id}">${datum.jumlah}%</label>
                         </div>
                         `;
-                      });
-                    }
-                  }
-                  modalEdit += '</div>';
-                } else if (formInputs[key]['type'] == 'select') {
-                  modalEdit += `
+                  });
+                }
+              }
+              modalEdit += '</div>';
+            } else if (formInputs[key]['type'] == 'select') {
+              modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
               `;
-                  if (Array.isArray(formInputs[key]['data'])) {
-                    if (typeof formInputs[key]['data'][0] == 'object') {
-                      formInputs[key]['data'].forEach(datum => {
-                        if (key == 'pelanggan_id') {
-                          if (response.data[key] == datum) {
-                            modalEdit += `<option value="${datum.kode}" selected>${datum.nama_perusahaan}</option>`;
-                          } else {
-                            modalEdit += `<option value="${datum.kode}">${datum.nama_perusahaan}</option>`;
-                          }
-                        } else {
-                          if (response.data[key] == datum) {
-                            modalEdit += `<option value="${datum.id}" selected>${datum.nama}</option>`;
-                          } else {
-                            modalEdit += `<option value="${datum.id}">${datum.nama}</option>`;
-                          }
-                        }
-                      });
+              if (Array.isArray(formInputs[key]['data'])) {
+                if (typeof formInputs[key]['data'][0] == 'object') {
+                  formInputs[key]['data'].forEach(datum => {
+                    if (response.data[key] == datum) {
+                      modalEdit += `<option value="${datum.id}" selected>${datum.kode}</option>`;
                     } else {
-                      formInputs[key]['data'].forEach(datum => {
-                        modalEdit += `<option value="${datum}" ${response.data[key]==datum? 'selected':''}>${datum}</option>`;
-                        if (!formInputs[key]['required']) {
-                          if (response.data[key]) {
-                            modalEdit += `<option value="" selected>Tidak ada</option>`;
-                          } else {
-                            modalEdit += `<option value="">Tidak ada</option>`;
-                          }
-                        }
-                      });
+                      modalEdit += `<option value="${datum.id}">${datum.kode}</option>`;
                     }
-                  }
-                  modalEdit += `
+                  });
+                } else {
+                  formInputs[key]['data'].forEach(datum => {
+                    modalEdit += `<option value="${datum}" ${response.data[key]==datum? 'selected':''}>${datum}</option>`;
+                    if (!formInputs[key]['required']) {
+                      if (response.data[key]) {
+                        modalEdit += `<option value="" selected>Tidak ada</option>`;
+                      } else {
+                        modalEdit += `<option value="">Tidak ada</option>`;
+                      }
+                    }
+                  });
+                }
+              }
+              modalEdit += `
                 </select>
               </div>
               `;
-                } else if (formInputs[key]['type'] == 'radio') {
-                  modalEdit += `
+            } else if (formInputs[key]['type'] == 'radio') {
+              modalEdit += `
               <div class="mb-4">
                 <p>${key.replace(/_/g,' ')} ${formInputs[key]['required']?'<span class="red-text">*</span>':''}</p>
               `;
 
-                  if (Array.isArray(formInputs[key]['data'])) {
-                    formInputs[key]['data'].forEach(datum => {
-                      modalEdit += `
+              if (Array.isArray(formInputs[key]['data'])) {
+                formInputs[key]['data'].forEach(datum => {
+                  modalEdit += `
                   <div class="custom-control custom-radio custom-control-inline">
                     <input type="radio" class="custom-control-input" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''}  ${response.data[key]==datum?'checked':''}>
                     <label class="custom-control-label" for="${datum}">${datum}</label>
                   </div>
                   `;
-                    });
-                  }
-                  modalEdit += `</div>`;
-                }
+                });
               }
+              modalEdit += `</div>`;
+            }
+          }
 
-              // Append modal
-              modalEdit += `
+          // Append modal
+          modalEdit += `
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
@@ -550,102 +591,63 @@ include './head.php';
           </div>
           `;
 
-              $('.modal-container').html(modalEdit);
-              $('#modalUbah').modal('show');
+          $('.modal-container').html(modalEdit);
+          $('#modalUbah').modal('show');
 
-              const selDetail = $('#detail_pelanggan_id-input');
-              selDetail.empty();
-              response1.data.forEach(datum => {
-                if (response.data['detail_pelanggan_id'] == datum.id) {
-                  selDetail.append(`<option value="${datum.id}" selected>${datum.alamat}</option>`);
+          $('#edit-form').submit(event => {
+            event.preventDefault();
+
+            // Get the form data
+            const form = document.getElementById('edit-form')
+            const formData = new FormData(form);
+            formData.append('kode', kode);
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+              if (input.type === 'checkbox' || input.type === 'radio') {
+                if (!input.checked) {
+                  formData.set(input.name, '');
+                }
+              } else if (input.value === '') {
+                formData.set(input.name, '');
+              }
+            });
+
+            // Send the AJAX request
+            $.ajax({
+              type: 'POST',
+              url: './api/surat_jalan_edit.php',
+              data: formData,
+              contentType: false,
+              processData: false,
+              success: response => {
+                console.log(response)
+                response = JSON.parse(response);
+                $('#modalUbah').modal('hide');
+                $(".modal-backdrop").remove();
+                if (response.success) {
+                  showAlert('success', response.message);
                 } else {
-                  selDetail.append(`<option value="${datum.id}">${datum.alamat}</option>`);
-
+                  showAlert('danger', response.message);
                 }
-              });
+                loadPage();
+              },
+              error: (jqXHR, textStatus, errorThrown) => {
+                console.log(textStatus, errorThrown);
+              }
+            });
+          })
 
-              $('#pelanggan_id-input').change(() => {
-                const selDetail = $('#detail_pelanggan_id-input');
-                let pelanggan = $('#pelanggan_id-input').find(':selected').val();
-                selDetail.empty();
-                selDetail.append('<option value="" selected hidden>--- PILIH DETAIL PELANGGAN ID ---</option>');
-                $.ajax({
-                  type: 'POST',
-                  url: './api/detail_pelanggan_get.php',
-                  data: {
-                    'kode': pelanggan
-                  },
-                  success: response => {
-                    console.log(response);
-                    response = JSON.parse(response);
-                    response.data.forEach(datum => {
-                      selDetail.append(`<option value="${datum.id}">${datum.alamat}</option>`);
-                    });
-                  },
-                  error: (jqXHR, textStatus, errorThrown) => {
-                    console.log(textStatus, errorThrown);
-                  }
-                });
-                selDetail.removeAttr('disabled');
-              });
-
-              $('#edit-form').submit(event => {
-                event.preventDefault();
-
-                // Get inputs
-                let inputs = {};
-                for (const key in formInputs) {
-                  if (key != 'pelanggan_id') {
-                    if (key == 'kode') {
-                      inputs[key] = $(`#${key}-input`).val().toUpperCase();
-                    } else if (formInputs[key]['type'] == 'radio' || formInputs[key]['type'] == 'checkbox') {
-                      inputs[key] = $(`input[name=${key}]:checked`).attr('id') ?? null;
-                    } else {
-                      inputs[key] = $(`#${key}-input`).val();
-                    }
-                  }
-                }
-                console.log(inputs)
-
-                // Get the form data
-                const formData = {
-                  'id': id,
-                  'inputs': inputs
-                };
-
-                // Send the AJAX request
-                $.ajax({
-                  type: 'POST',
-                  url: './api/penawaran_barang_edit.php',
-                  data: formData,
-                  success: response => {
-                    console.log(response)
-                    response = JSON.parse(response);
-                    $('#modalUbah').modal('hide');
-                    $(".modal-backdrop").remove();
-                    if (response.success) {
-                      showAlert('success', response.message);
-                    } else {
-                      showAlert('danger', response.message);
-                    }
-                    loadPage();
-                  },
-                  error: (jqXHR, textStatus, errorThrown) => {
-                    console.log(textStatus, errorThrown);
-                  }
-                });
-              })
-            },
-            error: (jqXHR, textStatus, errorThrown) => {
-              console.log(textStatus, errorThrown);
-            }
-          });
         }
       },
       error: (jqXHR, textStatus, errorThrown) => {
         console.log(textStatus, errorThrown);
       }
     });
+  }
+
+  const printPdf = () => {
+    const pdf = document.getElementById('pdf');
+    html2pdf(pdf);
   }
 </script>
 

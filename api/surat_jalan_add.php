@@ -6,23 +6,21 @@ session_start();
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // Get data from the request
-  $inputs = $_POST['inputs'];
-  $inputs['kode'] = generateKode('pipeline_marketings', 4, $conn);
+  $_POST['kode'] = generateKode('surat_jalans', 4, $conn);
 
   // Get keys
-  $keys = array_keys($inputs);
+  $keys = array_keys($_POST);
 
   // Get values
-  $values = array_values($inputs);
+  $values = array_values($_POST);
 
   // Prepare SQL
   $placeholder = '';
   $params = '';
-  $sql = "INSERT INTO pipeline_marketings (";
-  for ($i = 0; $i < count($inputs); $i++) {
+  $sql = "INSERT INTO surat_jalans (";
+  for ($i = 0; $i < count($_POST); $i++) {
     $key = $keys[$i];
-    if ($i == count($inputs) - 1) {
+    if ($i == count($_POST) - 1) {
       $sql .= "$key";
       $placeholder .= '?';
     } else {
@@ -37,9 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $stmt->execute();
 
   if ($stmt->affected_rows > 0) {
-    $response = ['success' => true, 'message' => "Berhasil menambahkan data pipeline marketing."];
+    $response = ['success' => true, 'message' => "Berhasil menambahkan data surat jalan."];
   } else {
-    $response = ['success' => false, 'message' => "Gagal menambahkan data pipeline marketing."];
+    $response = ['success' => false, 'message' => "Gagal menambahkan data surat jalan."];
   }
 
   echo json_encode($response);

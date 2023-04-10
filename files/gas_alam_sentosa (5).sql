@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 08, 2023 at 08:06 AM
+-- Generation Time: Apr 10, 2023 at 11:02 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -86,7 +86,56 @@ CREATE TABLE `detail_pelanggans` (
 --
 
 INSERT INTO `detail_pelanggans` (`id`, `provinsi`, `kota`, `alamat`, `kode_pos`, `nama_purchasing`, `kontak_purchasing`, `email_purchasing`, `nama_finance`, `kontak_finance`, `email_finance`, `harga_jual`, `top`, `pelanggan_id`) VALUES
-(6, 'Bali', 'Tabanan', 'Jl. Dummy', '', 'purchasing', '12345', '', 'finance', '12345', '', 100000, 2, 7);
+(6, 'Bali', 'Tabanan', 'Jl. Dummy Detail', '', 'purchasing', '12345', '', 'finance', '12345', '', 100000, 2, 7);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `detail_penawaran_barangs`
+--
+
+CREATE TABLE `detail_penawaran_barangs` (
+  `barang_id` int(11) NOT NULL,
+  `penawaran_barang_id` int(11) NOT NULL,
+  `kuantitas` int(11) DEFAULT NULL,
+  `harga_jual` double DEFAULT NULL,
+  `ppn` double DEFAULT NULL,
+  `subtotal` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `detail_penawaran_barangs`
+--
+
+INSERT INTO `detail_penawaran_barangs` (`barang_id`, `penawaran_barang_id`, `kuantitas`, `harga_jual`, `ppn`, `subtotal`) VALUES
+(4, 25, 12, 15000, 11, 199800),
+(5, 25, 10, 40000, 11, 444000);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `detail_request_orders`
+--
+
+CREATE TABLE `detail_request_orders` (
+  `id` int(11) NOT NULL,
+  `kuantitas` int(11) DEFAULT NULL,
+  `request_order_id` int(11) NOT NULL,
+  `barang_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `detail_surat_jalans`
+--
+
+CREATE TABLE `detail_surat_jalans` (
+  `id` int(11) NOT NULL,
+  `kuantitas` int(11) DEFAULT NULL,
+  `detail_request_order_id` int(11) NOT NULL,
+  `surat_jalan_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -157,7 +206,7 @@ CREATE TABLE `pelanggans` (
 --
 
 INSERT INTO `pelanggans` (`id`, `kode`, `nama_perusahaan`, `kontak_perusahaan`, `badan_usaha`, `nama_direktur`, `kontak_direktur`, `nama_pelanggan`, `ktp`, `npwp`, `provinsi`, `kota`, `alamat`, `kode_pos`, `status_piutang`, `marketing_id`) VALUES
-(7, 'DUM', 'perusahaan', '10231920', 'PT', 'direktur', '0123919', 'pelanggan', '12931010', '12931010', 'Kalimantan Timur', 'Paser', 'Jl. Dummy', '1231', 'Lancar', 1);
+(7, 'DUM', 'perusahaan', '10231920', 'PT', 'direktur', '0123919', 'pelanggan', '12931010', '12931010', 'Kalimantan Timur', 'Paser', 'Jl. Dummy Umum', '1231', 'Lancar', 1);
 
 -- --------------------------------------------------------
 
@@ -168,14 +217,10 @@ INSERT INTO `pelanggans` (`id`, `kode`, `nama_perusahaan`, `kontak_perusahaan`, 
 CREATE TABLE `penawaran_barangs` (
   `id` int(11) NOT NULL,
   `kode` varchar(45) NOT NULL,
-  `harga_jual` double DEFAULT NULL,
   `diskon` double DEFAULT NULL,
   `biaya_tambahan` double DEFAULT NULL,
-  `nominal_biaya` double DEFAULT NULL,
   `tanggal_dibuat` date NOT NULL DEFAULT current_timestamp(),
   `detail_pelanggan_id` int(11) NOT NULL,
-  `barang_id` int(11) NOT NULL,
-  `ppn_id` int(11) DEFAULT NULL,
   `marketing_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -183,8 +228,15 @@ CREATE TABLE `penawaran_barangs` (
 -- Dumping data for table `penawaran_barangs`
 --
 
-INSERT INTO `penawaran_barangs` (`id`, `kode`, `harga_jual`, `diskon`, `biaya_tambahan`, `nominal_biaya`, `tanggal_dibuat`, `detail_pelanggan_id`, `barang_id`, `ppn_id`, `marketing_id`) VALUES
-(7, 'PWR/IT/2023/04/0001', 1000000, 1000, 10000, 100000, '2023-04-06', 6, 4, 1, 1);
+INSERT INTO `penawaran_barangs` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal_dibuat`, `detail_pelanggan_id`, `marketing_id`) VALUES
+(7, 'PWR/IT/2023/04/0001', 1000, 10000, '2023-04-06', 6, 1),
+(8, 'PWR/IT/2023/04/0002', 0, 0, '2023-04-10', 6, 1),
+(11, 'PWR/IT/2023/04/0003', 0, 0, '2023-04-10', 6, 1),
+(12, 'PWR/IT/2023/04/0004', 100, 12010, '2023-04-10', 6, 1),
+(18, 'PWR/IT/2023/04/0005', 0, 0, '2023-04-10', 6, 1),
+(21, 'PWR/IT/2023/04/0006', 12000, 1000, '2023-04-10', 6, 1),
+(23, 'PWR/IT/2023/04/0007', 0, 0, '2023-04-10', 6, 1),
+(25, 'PWR/IT/2023/04/0008', 0, 0, '2023-04-10', 6, 1);
 
 -- --------------------------------------------------------
 
@@ -220,7 +272,7 @@ INSERT INTO `pipeline_marketings` (`id`, `kode`, `pemakaian`, `tanggal_dibuat`, 
 
 CREATE TABLE `ppns` (
   `id` int(11) NOT NULL,
-  `jumlah` int(11) DEFAULT NULL,
+  `jumlah` double DEFAULT NULL,
   `aktif` tinyint(4) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
@@ -248,7 +300,6 @@ CREATE TABLE `request_orders` (
   `file_po` varchar(45) DEFAULT NULL,
   `aktif` tinyint(4) DEFAULT NULL,
   `detail_pelanggan_id` int(11) NOT NULL,
-  `barang_id` int(11) NOT NULL,
   `marketing_id` int(11) NOT NULL,
   `pipeline_marketing_id` int(11) DEFAULT NULL,
   `manager_id` int(11) DEFAULT NULL
@@ -258,14 +309,14 @@ CREATE TABLE `request_orders` (
 -- Dumping data for table `request_orders`
 --
 
-INSERT INTO `request_orders` (`id`, `kode`, `tanggal_dibuat`, `kuantitas`, `tanggal_kirim`, `no_po`, `tanggal_po`, `file_po`, `aktif`, `detail_pelanggan_id`, `barang_id`, `marketing_id`, `pipeline_marketing_id`, `manager_id`) VALUES
-(2, 'RO/IT/2023/04/0001', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', NULL, 1, 6, 4, 1, 3, 1),
-(3, 'RO/IT/2023/04/0002', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', NULL, NULL, 6, 5, 1, 3, 1),
-(4, 'RO/IT/2023/04/0003', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', NULL, NULL, 6, 5, 1, 3, NULL),
-(5, 'RO/IT/2023/04/0004', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', 'RO_IT_2023_04_0004.png', NULL, 6, 5, 1, 3, NULL),
-(6, 'RO/IT/2023/04/0005', '2023-04-08', 123, '2023-04-06', '89483', '2023-04-03', 'RO_IT_2023_04_0005.pdf', NULL, 6, 4, 1, 3, NULL),
-(7, 'RO/IT/2023/04/0006', '2023-04-08', 45, '2023-04-04', '', '0000-00-00', NULL, NULL, 6, 6, 1, 3, NULL),
-(8, 'RO/IT/2023/04/0007', '2023-04-08', 622, '2023-04-12', '', '0000-00-00', NULL, 1, 6, 4, 1, 3, NULL);
+INSERT INTO `request_orders` (`id`, `kode`, `tanggal_dibuat`, `kuantitas`, `tanggal_kirim`, `no_po`, `tanggal_po`, `file_po`, `aktif`, `detail_pelanggan_id`, `marketing_id`, `pipeline_marketing_id`, `manager_id`) VALUES
+(2, 'RO/IT/2023/04/0001', '2023-04-08', 14, '2023-04-05', '82493', '2023-04-12', NULL, 1, 6, 1, 3, NULL),
+(3, 'RO/IT/2023/04/0002', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', NULL, 0, 6, 1, 3, NULL),
+(4, 'RO/IT/2023/04/0003', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', NULL, 0, 6, 1, 3, NULL),
+(5, 'RO/IT/2023/04/0004', '2023-04-08', 12, '2023-04-05', '82493', '2023-04-12', 'RO_IT_2023_04_0004.png', 1, 6, 1, 3, NULL),
+(6, 'RO/IT/2023/04/0005', '2023-04-08', 123, '2023-04-06', '89483', '2023-04-03', 'RO_IT_2023_04_0005.pdf', 0, 6, 1, 3, NULL),
+(7, 'RO/IT/2023/04/0006', '2023-04-08', 45, '2023-04-04', '', '0000-00-00', NULL, 0, 6, 1, 3, NULL),
+(8, 'RO/IT/2023/04/0007', '2023-04-08', 622, '2023-04-12', '', '0000-00-00', NULL, 1, 6, 1, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -337,12 +388,18 @@ CREATE TABLE `surat_jalans` (
   `id` int(11) NOT NULL,
   `kode` varchar(45) NOT NULL,
   `tanggal_dibuat` date DEFAULT current_timestamp(),
-  `kuantitas` int(11) DEFAULT NULL,
   `tanggal_kirim` date DEFAULT NULL,
   `nama_driver` varchar(45) DEFAULT NULL,
-  `request_order_id` int(11) NOT NULL,
   `marketing_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `surat_jalans`
+--
+
+INSERT INTO `surat_jalans` (`id`, `kode`, `tanggal_dibuat`, `tanggal_kirim`, `nama_driver`, `marketing_id`) VALUES
+(2, 'SJ/IT/2023/04/0001', '2023-04-10', '2023-04-11', 'Driver Dumm', 1),
+(7, 'SJ/IT/2023/04/0002', '2023-04-10', '2023-04-27', '', 1);
 
 -- --------------------------------------------------------
 
@@ -392,6 +449,30 @@ ALTER TABLE `detail_pelanggans`
   ADD KEY `fk_detail_pelanggans_pelanggans1_idx` (`pelanggan_id`);
 
 --
+-- Indexes for table `detail_penawaran_barangs`
+--
+ALTER TABLE `detail_penawaran_barangs`
+  ADD PRIMARY KEY (`barang_id`,`penawaran_barang_id`),
+  ADD KEY `fk_barangs_has_penawaran_barangs_penawaran_barangs1_idx` (`penawaran_barang_id`),
+  ADD KEY `fk_barangs_has_penawaran_barangs_barangs1_idx` (`barang_id`);
+
+--
+-- Indexes for table `detail_request_orders`
+--
+ALTER TABLE `detail_request_orders`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_detail_request_orders_request_orders1_idx` (`request_order_id`),
+  ADD KEY `fk_detail_request_orders_barangs1_idx` (`barang_id`);
+
+--
+-- Indexes for table `detail_surat_jalans`
+--
+ALTER TABLE `detail_surat_jalans`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_detail_surat_jalans_detail_request_orders1_idx` (`detail_request_order_id`),
+  ADD KEY `fk_detail_surat_jalans_surat_jalans1_idx` (`surat_jalan_id`);
+
+--
 -- Indexes for table `divisis`
 --
 ALTER TABLE `divisis`
@@ -419,8 +500,6 @@ ALTER TABLE `penawaran_barangs`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `kode_UNIQUE` (`kode`),
   ADD KEY `fk_penawaran_barangs_detail_pelanggans1_idx` (`detail_pelanggan_id`),
-  ADD KEY `fk_penawaran_barangs_barangs1_idx` (`barang_id`),
-  ADD KEY `fk_penawaran_barangs_ppns1_idx` (`ppn_id`),
   ADD KEY `fk_penawaran_barangs_users1_idx` (`marketing_id`);
 
 --
@@ -447,7 +526,6 @@ ALTER TABLE `request_orders`
   ADD KEY `fk_request_orders_detail_pelanggans1_idx` (`detail_pelanggan_id`),
   ADD KEY `fk_request_orders_pipeline_marketings1_idx` (`pipeline_marketing_id`),
   ADD KEY `fk_request_orders_users1_idx` (`marketing_id`),
-  ADD KEY `fk_request_orders_barangs1_idx` (`barang_id`),
   ADD KEY `fk_request_orders_users2_idx` (`manager_id`);
 
 --
@@ -469,8 +547,7 @@ ALTER TABLE `satuans`
 ALTER TABLE `surat_jalans`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `kode_UNIQUE` (`kode`),
-  ADD KEY `fk_surat_jalans_users1_idx` (`marketing_id`),
-  ADD KEY `fk_surat_jalans_request_orders1_idx` (`request_order_id`);
+  ADD KEY `fk_surat_jalans_users1_idx` (`marketing_id`);
 
 --
 -- Indexes for table `users`
@@ -499,6 +576,18 @@ ALTER TABLE `detail_pelanggans`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
+-- AUTO_INCREMENT for table `detail_request_orders`
+--
+ALTER TABLE `detail_request_orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `detail_surat_jalans`
+--
+ALTER TABLE `detail_surat_jalans`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `divisis`
 --
 ALTER TABLE `divisis`
@@ -520,7 +609,7 @@ ALTER TABLE `pelanggans`
 -- AUTO_INCREMENT for table `penawaran_barangs`
 --
 ALTER TABLE `penawaran_barangs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `pipeline_marketings`
@@ -556,7 +645,7 @@ ALTER TABLE `satuans`
 -- AUTO_INCREMENT for table `surat_jalans`
 --
 ALTER TABLE `surat_jalans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -582,6 +671,27 @@ ALTER TABLE `detail_pelanggans`
   ADD CONSTRAINT `fk_detail_pelanggans_pelanggans1` FOREIGN KEY (`pelanggan_id`) REFERENCES `pelanggans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
+-- Constraints for table `detail_penawaran_barangs`
+--
+ALTER TABLE `detail_penawaran_barangs`
+  ADD CONSTRAINT `fk_barangs_has_penawaran_barangs_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_barangs_has_penawaran_barangs_penawaran_barangs1` FOREIGN KEY (`penawaran_barang_id`) REFERENCES `penawaran_barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `detail_request_orders`
+--
+ALTER TABLE `detail_request_orders`
+  ADD CONSTRAINT `fk_detail_request_orders_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_detail_request_orders_request_orders1` FOREIGN KEY (`request_order_id`) REFERENCES `request_orders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `detail_surat_jalans`
+--
+ALTER TABLE `detail_surat_jalans`
+  ADD CONSTRAINT `fk_detail_surat_jalans_detail_request_orders1` FOREIGN KEY (`detail_request_order_id`) REFERENCES `detail_request_orders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_detail_surat_jalans_surat_jalans1` FOREIGN KEY (`surat_jalan_id`) REFERENCES `surat_jalans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
 -- Constraints for table `pelanggans`
 --
 ALTER TABLE `pelanggans`
@@ -591,9 +701,7 @@ ALTER TABLE `pelanggans`
 -- Constraints for table `penawaran_barangs`
 --
 ALTER TABLE `penawaran_barangs`
-  ADD CONSTRAINT `fk_penawaran_barangs_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_penawaran_barangs_detail_pelanggans1` FOREIGN KEY (`detail_pelanggan_id`) REFERENCES `detail_pelanggans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `fk_penawaran_barangs_ppns1` FOREIGN KEY (`ppn_id`) REFERENCES `ppns` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_penawaran_barangs_users1` FOREIGN KEY (`marketing_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
@@ -607,7 +715,6 @@ ALTER TABLE `pipeline_marketings`
 -- Constraints for table `request_orders`
 --
 ALTER TABLE `request_orders`
-  ADD CONSTRAINT `fk_request_orders_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_request_orders_detail_pelanggans1` FOREIGN KEY (`detail_pelanggan_id`) REFERENCES `detail_pelanggans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_request_orders_pipeline_marketings1` FOREIGN KEY (`pipeline_marketing_id`) REFERENCES `pipeline_marketings` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_request_orders_users1` FOREIGN KEY (`marketing_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -617,7 +724,6 @@ ALTER TABLE `request_orders`
 -- Constraints for table `surat_jalans`
 --
 ALTER TABLE `surat_jalans`
-  ADD CONSTRAINT `fk_surat_jalans_request_orders1` FOREIGN KEY (`request_order_id`) REFERENCES `request_orders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_surat_jalans_users1` FOREIGN KEY (`marketing_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
