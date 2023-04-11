@@ -147,7 +147,7 @@ include './head.php';
             });
             row += `
             <td>
-              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum[keys[0]]}','${datum[keys[1]]}')"><i class="fas fa-edit"></i></button>
+              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}','${datum['pelanggan']}')"><i class="fas fa-edit"></i></button>
             </td>
             `;
             row += `</tr>`;
@@ -256,7 +256,7 @@ include './head.php';
         modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
           <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
@@ -284,7 +284,7 @@ include './head.php';
           formInputs[key]['data'].forEach(datum => {
             modalAdd += `
             <div class="custom-control custom-radio custom-control-inline">
-              <input type="radio" class="custom-control-input" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+              <input type="radio" class="custom-control-input" id="${datum}" name="${key}" value="${datum}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
               <label class="custom-control-label" for="${datum}">${datum}</label>
             </div>
             `;
@@ -340,29 +340,30 @@ include './head.php';
     $('#input-form').submit((event) => {
       event.preventDefault();
 
-      // Get inputs
-      let inputs = {};
-      for (const key in formInputs) {
-        if (key != 'pelanggan_id') {
-          if (formInputs[key]['type'] == 'radio') {
-            inputs[key] = $(`input[name=${key}]:checked`).attr('id');
-          } else {
-            inputs[key] = $(`#${key}-input`).val();
-          }
-        }
-      }
-      inputs['marketing_id'] = <?php echo $_SESSION['id']; ?>;
-
       // Get the form data
-      const formData = {
-        'inputs': inputs
-      };
+      const form = document.getElementById('input-form')
+      const formData = new FormData(form);
+      formData.delete('pelanggan_id');
+      formData.append('marketing_id', <?php echo $_SESSION['id']; ?>);
+      const inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          if (!input.checked) {
+            formData.set(input.name, '');
+          }
+        } else if (input.value === '') {
+          formData.set(input.name, '');
+        }
+      });
+      formData.set('status_pelanggan', document.querySelector('input[name="status_pelanggan"]:checked').value);
 
       // Send the AJAX request
       $.ajax({
         type: 'POST',
         url: './api/pipeline_marketing_add.php',
         data: formData,
+        contentType: false,
+        processData: false,
         success: response => {
           console.log(response);
           response = JSON.parse(response);
@@ -382,13 +383,13 @@ include './head.php';
     });
   }
 
-  const editModal = (id, kode) => {
+  const editModal = (kode, pelanggan) => {
     // Send the AJAX request
     $.ajax({
       type: 'POST',
       url: './api/pipeline_marketing_get_one.php',
       data: {
-        'id': id,
+        'kode': kode,
       },
       success: response => {
         response = JSON.parse(response);
@@ -397,7 +398,7 @@ include './head.php';
             type: 'POST',
             url: './api/detail_pelanggan_get.php',
             data: {
-              'kode': kode
+              'kode': pelanggan
             },
             success: response1 => {
               response1 = JSON.parse(response1);
@@ -449,7 +450,7 @@ include './head.php';
                   modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
               `;
                   if (Array.isArray(formInputs[key]['data'])) {
                     if (typeof formInputs[key]['data'][0] == 'object') {
@@ -487,7 +488,7 @@ include './head.php';
                     formInputs[key]['data'].forEach(datum => {
                       modalEdit += `
                   <div class="custom-control custom-radio custom-control-inline">
-                    <input type="radio" class="custom-control-input" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''}  ${response.data[key]==datum?'checked':''}>
+                    <input type="radio" class="custom-control-input" id="${datum}" name="${key}" value="${datum}" ${formInputs[key]['required']?'required':''}  ${response.data[key]==datum?'checked':''}>
                     <label class="custom-control-label" for="${datum}">${datum}</label>
                   </div>
                   `;
@@ -552,32 +553,30 @@ include './head.php';
               $('#edit-form').submit(event => {
                 event.preventDefault();
 
-                // Get inputs
-                let inputs = {};
-                for (const key in formInputs) {
-                  if (key != 'pelanggan_id') {
-                    if (key == 'kode') {
-                      inputs[key] = $(`#${key}-input`).val().toUpperCase();
-                    } else if (formInputs[key]['type'] == 'radio') {
-                      inputs[key] = $(`input[name=${key}]:checked`).attr('id');
-                    } else {
-                      inputs[key] = $(`#${key}-input`).val();
-                    }
-                  }
-                }
-                console.log(inputs)
-
                 // Get the form data
-                const formData = {
-                  'id': id,
-                  'inputs': inputs
-                };
+                const form = document.getElementById('edit-form')
+                const formData = new FormData(form);
+                formData.delete('pelanggan_id');
+                formData.append('id', response.data.id);
+                const inputs = form.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                  if (input.type === 'checkbox' || input.type === 'radio') {
+                    if (!input.checked) {
+                      formData.set(input.name, '');
+                    }
+                  } else if (input.value === '') {
+                    formData.set(input.name, '');
+                  }
+                });
+                formData.set('status_pelanggan', document.querySelector('input[name="status_pelanggan"]:checked').value);
 
                 // Send the AJAX request
                 $.ajax({
                   type: 'POST',
                   url: './api/pipeline_marketing_edit.php',
                   data: formData,
+                  contentType: false,
+                  processData: false,
                   success: response => {
                     console.log(response)
                     response = JSON.parse(response);

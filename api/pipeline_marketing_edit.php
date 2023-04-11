@@ -6,23 +6,21 @@ include 'connection.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Get the table from the request
   $id = $_POST['id'];
-
-  // Get data from the request
-  $inputs = $_POST['inputs'];
+  unset($_POST['id']);
 
   // Get keys
-  $keys = array_keys($inputs);
+  $keys = array_keys($_POST);
 
   // Get values
-  $values = array_values($inputs);
+  $values = array_values($_POST);
 
   // Prepare SQL
   $placeholder = '';
   $params = '';
   $sql = "UPDATE pipeline_marketings SET ";
-  for ($i = 0; $i < count($inputs); $i++) {
+  for ($i = 0; $i < count($_POST); $i++) {
     $key = $keys[$i];
-    if ($i == count($inputs) - 1) {
+    if ($i == count($_POST) - 1) {
       $sql .= "$key = ? ";
     } else {
       $sql .= "$key = ?, ";

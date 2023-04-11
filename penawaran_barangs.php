@@ -243,7 +243,7 @@ include './head.php';
     // Initialize modal
     let modalAdd = `
     <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-lg" role="document">
         <div class="modal-content">
           <form id="input-form">
             <div class="modal-header">
@@ -516,7 +516,7 @@ include './head.php';
 
               let modalEdit = `
           <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
               <div class="modal-content">
                 <form id="edit-form">
                   <div class="modal-header">
@@ -574,9 +574,7 @@ include './head.php';
                         </thead>
                         <tbody id="tbBarang">
                   `;
-                  console.log(response.barangs)
                   response.barangs.forEach(barang => {
-                    console.log(barang)
                     let table = `
                     <tr id="row${counter}">
                       <td>
@@ -744,32 +742,30 @@ include './head.php';
               $('#edit-form').submit(event => {
                 event.preventDefault();
 
-                // Get inputs
-                let inputs = {};
-                for (const key in formInputs) {
-                  if (key != 'pelanggan_id') {
-                    if (key == 'kode') {
-                      inputs[key] = $(`#${key}-input`).val().toUpperCase();
-                    } else if (formInputs[key]['type'] == 'radio' || formInputs[key]['type'] == 'checkbox') {
-                      inputs[key] = $(`input[name=${key}]:checked`).attr('id') ?? null;
-                    } else {
-                      inputs[key] = $(`#${key}-input`).val();
-                    }
-                  }
-                }
-                console.log(inputs)
-
                 // Get the form data
-                const formData = {
-                  'id': id,
-                  'inputs': inputs
-                };
+                const form = document.getElementById('edit-form')
+                const formData = new FormData(form);
+                formData.delete('pelanggan_id');
+                formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
+                formData.append('id', response.data.id);
+                const inputs = form.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                  if (input.type === 'checkbox' || input.type === 'radio') {
+                    if (!input.checked) {
+                      formData.set(input.name, '');
+                    }
+                  } else if (input.value === '') {
+                    formData.set(input.name, '');
+                  }
+                });
 
                 // Send the AJAX request
                 $.ajax({
                   type: 'POST',
                   url: './api/penawaran_barang_edit.php',
                   data: formData,
+                  contentType: false,
+                  processData: false,
                   success: response => {
                     console.log(response)
                     response = JSON.parse(response);

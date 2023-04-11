@@ -6,12 +6,12 @@ session_start();
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Get the id from the request
-  $id = $_POST['id'];
+  $kode = $_POST['kode'];
 
   // Get table data with prepared statement
-  $sql = "SELECT * FROM pipeline_marketings WHERE id = ?";
+  $sql = "SELECT * FROM pipeline_marketings WHERE kode = ?";
   $stmt = $conn->prepare($sql);
-  $stmt->bind_param('s', $id);
+  $stmt->bind_param('s', $kode);
   $stmt->execute();
   $res = $stmt->get_result();
 
