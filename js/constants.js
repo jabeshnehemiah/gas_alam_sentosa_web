@@ -1,7 +1,8 @@
 const tipeBarangs = ['Persediaan', 'Jasa'];
-const badanUsahas = ['PT','CV','UD'];
-const statusPiutangs = ['Lancar','Tidak Lancar'];
-const statusPelanggans = ['Progress','Survey','Prepare','Installed','Uninstalled'];
+const alurBarangs = ['Jual', 'Beli', 'All'];
+const badanUsahas = ['PT', 'CV', 'UD','Kop','Perum','Toko','Univ','Bapak/Ibu'];
+const statusPiutangs = ['Lancar', 'Tidak Lancar'];
+const statusPelanggans = ['Progress', 'Survey', 'Prepare', 'Installed', 'Uninstalled'];
 const alamats = {
   'Aceh': [
     'Simeulue',

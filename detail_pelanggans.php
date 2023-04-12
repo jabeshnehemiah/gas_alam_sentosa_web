@@ -6,7 +6,6 @@ include './head.php';
 if (isset($_GET['kode'])) {
   $kode = $_GET['kode'];
 ?>
-  <script src="./js/constants.js"></script>
   <style>
     #kode-input {
       text-transform: uppercase;

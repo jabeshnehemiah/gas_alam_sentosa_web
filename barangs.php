@@ -2,7 +2,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <?php include './head.php'; ?>
-<script src="./js/constants.js"></script>
 
 <body>
   <?php include './navbar.php'; ?>

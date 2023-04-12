@@ -4,7 +4,6 @@
 <?php
 include './head.php';
 ?>
-<script src="./js/constants.js"></script>
 <style>
   #kode-input {
     text-transform: uppercase;
@@ -128,7 +127,7 @@ include './head.php';
           // Initialize datatable
           html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
           const data = response.data;
@@ -136,7 +135,7 @@ include './head.php';
 
           // Set table head and foot
           let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
           let foot = `
@@ -146,7 +145,7 @@ include './head.php';
 
           // Set head, foot
           keys.forEach(key => {
-            if (key != 'id') {
+            if (key != 'id' && key != 'kode_pelanggan') {
               head += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
               foot += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
             }
@@ -169,7 +168,7 @@ include './head.php';
             // Set row data
             let row = `<tr>`;
             keys.forEach(key => {
-              if (key != 'id') {
+              if (key != 'id' && key != 'kode_pelanggan') {
                 if (datum[key] != null) {
                   row += `<td>${datum[key]}</td>`;
                 } else {
@@ -179,7 +178,7 @@ include './head.php';
             });
             row += `
             <td>
-              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}','${datum['pelanggan']}')"><i class="fas fa-edit"></i></button>
+              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}','${datum['kode_pelanggan']}')"><i class="fas fa-edit"></i></button>
             </td>
             `;
             row += `</tr>`;
@@ -211,10 +210,14 @@ include './head.php';
                       .draw();
                   });
               });
+            },
+            scrollX: true,
+            scrollCollapse: true,
+            paging: true,
+            fixedColumns: {
+              left: 2
             }
           });
-          $('.dataTables_length').addClass('bs-select');
-          $('#datatable').parent().addClass('table-responsive');
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);
@@ -327,7 +330,7 @@ include './head.php';
         modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
           <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
@@ -387,6 +390,12 @@ include './head.php';
     $('.modal-container').html(modalAdd);
     $('#modalTambah').modal('show');
 
+    $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'style',
+      dropdownParent: $('.modal')
+    });
+
     $('#pelanggan_id-input').change(() => {
       const selDetail = $('#detail_pelanggan_id-input');
       let pelanggan = $('#pelanggan_id-input').find(':selected').val();
@@ -417,7 +426,7 @@ include './head.php';
       event.preventDefault();
 
       // Get the form data
-      const form = document.getElementById('input-form')
+      const form = document.getElementById('input-form');
       const formData = new FormData(form);
       formData.delete('pelanggan_id');
       formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
@@ -465,7 +474,7 @@ include './head.php';
     let table = `
       <tr id="row${counter}">
         <td>
-          <select class="browser-default custom-select" name="detail_penawaran_barangs[${counter}][barang_id]" required>
+          <select class="browser-default custom-select modal-select" name="detail_penawaran_barangs[${counter}][barang_id]" required>
             <option value="" selected hidden>PILIH BARANG</option>
       `;
     formInputs['detail_penawaran_barangs']['data'].forEach(datum => {
@@ -486,6 +495,13 @@ include './head.php';
       </tr>
       `;
     $('#tbBarang').append(table);
+
+    $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'style',
+      dropdownParent: $('.modal')
+    });
+
     counter++;
   }
 
@@ -578,7 +594,7 @@ include './head.php';
                     let table = `
                     <tr id="row${counter}">
                       <td>
-                        <select class="browser-default custom-select" name="detail_penawaran_barangs[${counter}][barang_id]" required>
+                        <select class="browser-default custom-select modal-select" name="detail_penawaran_barangs[${counter}][barang_id]" required>
                           <option value="" selected hidden>PILIH BARANG</option>
                     `;
                     formInputs['detail_penawaran_barangs']['data'].forEach(datum => {
@@ -631,7 +647,7 @@ include './head.php';
                   modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
               `;
                   if (Array.isArray(formInputs[key]['data'])) {
                     if (typeof formInputs[key]['data'][0] == 'object') {
@@ -703,6 +719,12 @@ include './head.php';
               $('.modal-container').html(modalEdit);
               $('#modalUbah').modal('show');
 
+              $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'style',
+      dropdownParent: $('.modal')
+    });
+
               const selDetail = $('#detail_pelanggan_id-input');
               selDetail.empty();
               response1.data.forEach(datum => {
@@ -743,7 +765,7 @@ include './head.php';
                 event.preventDefault();
 
                 // Get the form data
-                const form = document.getElementById('edit-form')
+                const form = document.getElementById('edit-form');
                 const formData = new FormData(form);
                 formData.delete('pelanggan_id');
                 formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);

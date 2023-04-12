@@ -4,7 +4,6 @@
 <?php
 include './head.php';
 ?>
-<script src="./js/constants.js"></script>
 <style>
   #kode-input {
     text-transform: uppercase;

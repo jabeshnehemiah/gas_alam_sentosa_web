@@ -4,7 +4,6 @@
 <?php
 include './head.php';
 ?>
-<script src="./js/constants.js"></script>
 <style>
   #kode-input {
     text-transform: uppercase;
@@ -15,7 +14,25 @@ include './head.php';
   <?php include './navbar.php'; ?>
   <div class="container py-4">
     <div class="alert-container"></div>
-    <div class="d-flex justify-content-between" id="heading"></div>
+    <div class="d-flex justify-content-between" id="heading">
+      <h1>PIPELINE MARKETING</h1>
+      <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
+    </div>
+    <div class="param-container d-flex py-3">
+      <div class="mr-3">
+        <p>tanggal awal</p>
+        <input type="date" id="param-awal" class="form-control param" value="<?php echo date('Y-m-d', strtotime('-1 month')); ?>">
+      </div>
+      <div class="mr-3">
+        <p>tanggal akhir</p>
+        <input type="date" id="param-akhir" class="form-control param" value="<?php echo date('Y-m-d'); ?>">
+      </div>
+      <div class="mr-3">
+        <p>pelanggan</p>
+        <select class="param" id="param-pelanggan">
+        </select>
+      </div>
+    </div>
     <div class="table-container"></div>
     <div class="modal-container"></div>
   </div>
@@ -33,9 +50,9 @@ include './head.php';
       'required': true,
       'disabled': true
     },
-    'pemakaian': {
-      'type': 'number',
-      'required': true
+    'detail_pipeline_marketings': {
+      'type': 'detail_pipeline_marketings',
+      'data': []
     },
     'tanggal_survey': {
       'type': 'date',
@@ -53,8 +70,16 @@ include './head.php';
 
   $(document).ready(function() {
     loadPelanggans();
+    loadBarangs();
 
-    loadPage();
+    $('.param').change(() => {
+      loadPage();
+    });
+
+    $('#param-pelanggan').select2({
+      theme: 'bootstrap4',
+      width: 'style',
+    });
 
     $('.alert').alert();
   });
@@ -64,10 +89,35 @@ include './head.php';
     $.ajax({
       type: 'POST',
       url: './api/pelanggan_get.php',
+      data: {
+
+      },
       success: response => {
         response = JSON.parse(response);
         if (response.success) {
           formInputs['pelanggan_id']['data'] = response.data;
+        }
+        let first = true;
+        response.data.forEach(datum => {
+          $('#param-pelanggan').append(`<option value="${datum.id}" ${first?'selected':''}>${datum.badan_usaha} ${datum.nama_perusahaan} - ${datum.kota}</option>}`);
+        });
+        loadPage();
+      },
+      error: (jqXHR, textStatus, errorThrown) => {
+        console.log(textStatus, errorThrown);
+      }
+    });
+  }
+
+  const loadBarangs = () => {
+    // Send the AJAX request
+    $.ajax({
+      type: 'POST',
+      url: './api/barang_get.php',
+      success: response => {
+        response = JSON.parse(response);
+        if (response.success) {
+          formInputs['detail_pipeline_marketings']['data'] = response.data;
         }
       },
       error: (jqXHR, textStatus, errorThrown) => {
@@ -82,21 +132,20 @@ include './head.php';
     $.ajax({
       type: 'POST',
       url: './api/pipeline_marketing_get.php',
+      data: {
+        'awal': $('#param-awal').val(),
+        'akhir': $('#param-akhir').val(),
+        'pelanggan': $('#param-pelanggan').val(),
+      },
       success: (response) => {
         response = JSON.parse(response);
         let html;
-
-        // Add heading
-        $('#heading').html(`
-          <h1>PIPELINE MARKETING</h1>
-          <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-          `);
 
         if (response.data.length > 0) {
           // Initialize datatable
           html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
           const data = response.data;
@@ -104,7 +153,7 @@ include './head.php';
 
           // Set table head and foot
           let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
           let foot = `
@@ -114,7 +163,7 @@ include './head.php';
 
           // Set head, foot
           keys.forEach(key => {
-            if (key != 'id') {
+            if (key != 'id' && key != 'kode_pelanggan') {
               head += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
               foot += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
             }
@@ -137,7 +186,7 @@ include './head.php';
             // Set row data
             let row = `<tr>`;
             keys.forEach(key => {
-              if (key != 'id') {
+              if (key != 'id' && key != 'kode_pelanggan') {
                 if (datum[key] != null) {
                   row += `<td>${datum[key]}</td>`;
                 } else {
@@ -147,7 +196,7 @@ include './head.php';
             });
             row += `
             <td>
-              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}','${datum['pelanggan']}')"><i class="fas fa-edit"></i></button>
+              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['id']}','${datum['kode_pelanggan']}')"><i class="fas fa-edit"></i></button>
             </td>
             `;
             row += `</tr>`;
@@ -179,10 +228,13 @@ include './head.php';
                       .draw();
                   });
               });
-            }
+            },
+            scrollX: true,
+            scrollCollapse: true,
+            paging: true,
+
           });
-          $('.dataTables_length').addClass('bs-select');
-          $('#datatable').parent().addClass('table-responsive');
+
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);
@@ -252,11 +304,30 @@ include './head.php';
           <input type="date" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
         </div>
         `;
+      } else if (formInputs[key]['type'] == 'detail_pipeline_marketings') {
+        modalAdd += `
+        <div class="mb-4">
+          <label>daftar barang</label><button class="btn btn-primary px-2 py-1" onClick="tambahBarang(event)"><i class="fas fa-plus"></i></button>
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th>Barang</th>
+                  <th>Kuantitas</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tbBarang">
+              </tbody>
+            </table>
+          </div>
+        </div>
+        `;
       } else if (formInputs[key]['type'] == 'select') {
         modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
           <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
@@ -309,6 +380,12 @@ include './head.php';
 
     $('.modal-container').html(modalAdd);
     $('#modalTambah').modal('show');
+
+    $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'style',
+      dropdownParent: $('.modal')
+    });
 
     $('#pelanggan_id-input').change(() => {
       const selDetail = $('#detail_pelanggan_id-input');
@@ -383,13 +460,48 @@ include './head.php';
     });
   }
 
-  const editModal = (kode, pelanggan) => {
+  let counter = 0;
+  const tambahBarang = (e) => {
+    e.preventDefault();
+    let table = `
+      <tr id="row${counter}">
+        <td>
+          <select class="browser-default custom-select modal-select" name="detail_pipeline_marketings[${counter}][barang_id]" required>
+            <option value="" selected hidden>PILIH BARANG</option>
+      `;
+    formInputs['detail_pipeline_marketings']['data'].forEach(datum => {
+      table += `<option value="${datum.id}">${datum.nama}</option>`;
+    })
+    table += `
+          </select>
+        </td>
+        <td><input type="text" name="detail_pipeline_marketings[${counter}][kuantitas]" class="form-control validate" required></td>
+        <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+      </tr>
+      `;
+    $('#tbBarang').append(table);
+
+    $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'style',
+      dropdownParent: $('.modal')
+    });
+
+    counter++;
+  }
+
+  const hapusBarang = (e, id) => {
+    e.preventDefault()
+    $(`#${id}`).remove()
+  }
+
+  const editModal = (id, pelanggan) => {
     // Send the AJAX request
     $.ajax({
       type: 'POST',
       url: './api/pipeline_marketing_get_one.php',
       data: {
-        'kode': kode,
+        'id': id,
       },
       success: response => {
         response = JSON.parse(response);
@@ -446,11 +558,60 @@ include './head.php';
                 <input type="date" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}">
               </div>
               `;
+                } else if (formInputs[key]['type'] == 'detail_pipeline_marketings') {
+                  modalEdit += `
+                  <div class="mb-4">
+                    <label>daftar barang</label><button class="btn btn-primary px-2 py-1" onClick="tambahBarang(event)"><i class="fas fa-plus"></i></button>
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-sm">
+                        <thead>
+                          <tr>
+                            <th>Barang</th>
+                            <th>Kuantitas</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbBarang">
+                  `;
+                  response.barangs.forEach(barang => {
+                    let table = `
+                    <tr id="row${counter}">
+                      <td>
+                        <select class="browser-default custom-select modal-select" name="detail_pipeline_marketings[${counter}][barang_id]" required>
+                          <option value="" selected hidden>PILIH BARANG</option>
+                    `;
+                    formInputs['detail_pipeline_marketings']['data'].forEach(datum => {
+                      table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
+                    })
+                    table += `
+                        </select>
+                      </td>
+                      <td><input type="number" name="detail_pipeline_marketings[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
+                      <td><input type="text" name="detail_pipeline_marketings[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
+                      <td>
+                        <div class="custom-control custom-checkbox">
+                          <input type="checkbox" class="custom-control-input" id="chk${counter}" name="detail_pipeline_marketings[${counter}][ppn]" value="${barang.ppn!=0?barang.ppn:ppn.jumlah}" ${barang.ppn!=0?'checked':''}>
+                          <label class="custom-control-label" for="chk${counter}">${barang.ppn!=0?barang.ppn:ppn.jumlah}%</label>
+                        </div>
+                      </td>
+                      <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+                    </tr>
+                    `;
+                    modalEdit += table;
+                    counter++;
+
+                  })
+                  modalEdit += `
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  `;
                 } else if (formInputs[key]['type'] == 'select') {
                   modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
               `;
                   if (Array.isArray(formInputs[key]['data'])) {
                     if (typeof formInputs[key]['data'][0] == 'object') {
@@ -513,6 +674,12 @@ include './head.php';
 
               $('.modal-container').html(modalEdit);
               $('#modalUbah').modal('show');
+
+              $('.modal-select').select2({
+                theme: 'bootstrap4',
+                width: 'style',
+                dropdownParent: $('.modal')
+              });
 
               const selDetail = $('#detail_pelanggan_id-input');
               selDetail.empty();

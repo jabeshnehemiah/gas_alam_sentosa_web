@@ -4,8 +4,6 @@
 <?php
 include './head.php';
 ?>
-<script src="./js/constants.js"></script>
-<script src="./js/html2pdf.min.js"></script>
 <style>
   #kode-input {
     text-transform: uppercase;
