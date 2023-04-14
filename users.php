@@ -18,7 +18,6 @@
   </div>
 </body>
 <script type="text/javascript">
-  
   const selects = ['roles', 'divisis', 'users'];
   let selectValues = {};
   let fillables;
@@ -75,7 +74,7 @@
           // Initialize datatable
           html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
           const data = response.data;
@@ -83,7 +82,7 @@
 
           // Set table head and foot
           let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
           let foot = `
@@ -155,10 +154,11 @@
                       .draw();
                   });
               });
-            }
+            },
+            scrollX: true,
+            scrollCollapse: true,
+            paging: true,
           });
-          $('.dataTables_length').addClass('bs-select');
-          $('#datatable').parent().addClass('table-responsive');
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);
@@ -186,7 +186,7 @@
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form">
@@ -311,7 +311,7 @@
         response = JSON.parse(response);
         if (response.success) {
           let modalEdit = `
-          <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
+          <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="edit-form">
@@ -351,7 +351,7 @@
             }
 
             selectValues[table].forEach(value => {
-              if (table != 'users' || value.nama != nama){
+              if (table != 'users' || value.nama != nama) {
                 if (response.data[table.slice(0, -1)] == value.nama) {
                   modalEdit += `<option value="${value.id}" selected>${value.nama}</option>`;
                 } else {
@@ -452,7 +452,7 @@
 
   const deleteModal = (kode, nama) => {
     let modalDelete = `
-          <div class="modal fade" id="modalHapus" tabindex="-1" role="dialog" aria-labelledby="modalHapusTitle" aria-hidden="true">
+          <div class="modal fade" id="modalHapus" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalHapusTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="delete-form">

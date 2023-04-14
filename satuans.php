@@ -142,7 +142,7 @@
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1"  data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form" enctype="multipart/form-data">

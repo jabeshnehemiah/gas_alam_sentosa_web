@@ -47,11 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ppn = intval($row['jumlah']);
       }
       if ($ppn) {
+        $sql = "DELETE FROM detail_penawaran_barangs WHERE penawaran_barang_id = $id";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        
         foreach ($details as $detail) {
-          $sql = "DELETE FROM detail_penawaran_barangs WHERE penawaran_barang_id = $id";
-          $stmt = $conn->prepare($sql);
-          $stmt->execute();
-
           $detail['penawaran_barang_id'] = $id;
           $subtotal = intval($detail['kuantitas']) * intval($detail['harga_jual']);
           $detail['subtotal'] = ceil($subtotal + $ppn * $subtotal / 100);

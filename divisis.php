@@ -43,7 +43,7 @@
           // Initialize datatable
           html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
           const data = response.data;
@@ -51,7 +51,7 @@
 
           // Set table head and foot
           let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
           let foot = `
@@ -106,7 +106,10 @@
                       .draw();
                   });
               });
-            }
+            },
+            scrollX: true,
+            scrollCollapse: true,
+            paging: true,
           });
           $('.dataTables_length').addClass('bs-select');
           $('#datatable').parent().addClass('table-responsive');
@@ -137,7 +140,7 @@
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form">

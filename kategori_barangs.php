@@ -13,7 +13,12 @@
   </div>
 </body>
 <script type="text/javascript">
-  let fillables;
+  let formInputs = {
+    'nama': {
+      'type': 'text',
+      'required': true
+    },
+  }
   $(document).ready(function() {
     loadPage();
 
@@ -31,8 +36,6 @@
         response = JSON.parse(response);
         let html;
 
-        fillables = response.fillables;
-
         // Add heading
         $('#heading').html(`
           <h1>KATEGORI BARANG</h1>
@@ -43,7 +46,7 @@
           // Initialize datatable
           html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
           const data = response.data;
@@ -51,7 +54,7 @@
 
           // Set table head and foot
           let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
           let foot = `
@@ -106,10 +109,11 @@
                       .draw();
                   });
               });
-            }
+            },
+            scrollX: true,
+            scrollCollapse: true,
+            paging: true,
           });
-          $('.dataTables_length').addClass('bs-select');
-          $('#datatable').parent().addClass('table-responsive');
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);
@@ -137,7 +141,7 @@
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form">
@@ -149,14 +153,16 @@
             </div>
             <div class="modal-body">
     `;
-    fillables.forEach(fillable => {
-      modalAdd += `
-      <div class="mb-4">
-        <label for="${fillable}-input">${fillable}</label>
-        <input type="text" id="${fillable}-input" name="${fillable}" class="form-control validate" required>
-      </div>
-      `;
-    });
+    for (const key in formInputs) {
+      if (formInputs[key]['type'] == 'text') {
+        modalAdd += `
+        <div class="mb-4">
+          <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+          <input type="text" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''} ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
+        </div>
+        `;
+      }
+    }
 
     // Append modal
     modalAdd += `
@@ -179,22 +185,16 @@
     $('#input-form').submit((event) => {
       event.preventDefault();
 
-      // Get inputs
-      let inputs = {};
-      fillables.forEach(key => {
-        inputs[key] = $(`#${key}-input`).val();
-      });
-
       // Get the form data
-      const formData = {
-        'inputs': inputs
-      };
+      const formData = new FormData(document.getElementById('input-form'));
 
       // Send the AJAX request
       $.ajax({
         type: 'POST',
         url: './api/kategori_barang_add.php',
         data: formData,
+        contentType: false,
+        processData: false,
         success: response => {
           console.log(response);
           response = JSON.parse(response);

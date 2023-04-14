@@ -20,7 +20,13 @@
     },
     'tipe': {
       'type': 'radio',
-      'data': tipeBarangs
+      'data': tipeBarangs,
+      'required': true
+    },
+    'alur': {
+      'type': 'radio',
+      'data': alurBarangs,
+      'required': true
     },
     'harga_beli': {
       'type': 'number',
@@ -99,7 +105,7 @@
           // Initialize datatable
           html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
           const data = response.data;
@@ -107,7 +113,7 @@
 
           // Set table head and foot
           let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
           let foot = `
@@ -142,7 +148,7 @@
             keys.forEach(key => {
               if (datum[key] != null) {
                 if (key == 'gambar') {
-                  row += `<td><img class="p-0" src="./files/barang/${datum[key]}" style="width: 10rem;"/></td>`;
+                  row += `<td><img class="p-0 btn" src="./files/barang/${datum[key]}" onClick="imgModal('${datum[key]}')" style="max-width: 8rem; max-height: 8rem;"/></td>`;
                 } else if (key != 'id') {
                   row += `<td>${datum[key]}</td>`;
                 }
@@ -184,10 +190,11 @@
                       .draw();
                   });
               });
-            }
+            },
+            scrollX: true,
+            scrollCollapse: true,
+            paging: true,
           });
-          $('.dataTables_length').addClass('bs-select');
-          $('#datatable').parent().addClass('table-responsive');
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);
@@ -215,7 +222,7 @@
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form">
@@ -261,8 +268,8 @@
         modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select" name=${key} id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
-          <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
+          <select class="browser-default custom-select modal-select" name=${key} id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <option></option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
           if (typeof formInputs[key]['data'][0] == 'object') {
@@ -315,12 +322,18 @@
     $('.modal-container').html(modalAdd);
     $('#modalTambah').modal('show');
 
+    $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'element',
+      placeholder: 'PILIH SALAH SATU'
+    });
+
     // Add event listener for save button
     $('#input-form').submit((event) => {
       event.preventDefault();
 
       // Get the form data
-      const formData = new FormData(document.getElementById('input-form'))
+      const formData = new FormData(document.getElementById('input-form'));
 
       // Send the AJAX request
       $.ajax({
@@ -361,7 +374,7 @@
         response = JSON.parse(response);
         if (response.success) {
           let modalEdit = `
-          <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
+          <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="edit-form">
@@ -407,7 +420,7 @@
               modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select" name=${key} id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select modal-select" name=${key} id="${key}-input" ${formInputs[key]['required']?'required':''} >
               `;
               if (Array.isArray(formInputs[key]['data'])) {
                 if (typeof formInputs[key]['data'][0] == 'object') {
@@ -472,6 +485,12 @@
           $('.modal-container').html(modalEdit);
           $('#modalUbah').modal('show');
 
+          $('.modal-select').select2({
+            theme: 'bootstrap4',
+            width: 'element',
+            placeholder: 'PILIH SALAH SATU'
+          });
+
           $('#edit-form').submit(event => {
             event.preventDefault();
 
@@ -520,6 +539,34 @@
         console.log(textStatus, errorThrown);
       }
     });
+  }
+
+  const imgModal = id => {
+    // Initialize modal
+    let modalImg = `
+    <div class="modal fade" id="modalImg" tabindex="-1" role="dialog" aria-labelledby="modalImgTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <form id="input-form">
+            <div class="modal-header">
+              <h5 class="modal-title">${id}</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="m-auto">
+                <img src="./files/barang/${id}" alt="${id}" style="width: 100%;" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    `;
+
+    $('.modal-container').html(modalImg);
+    $('#modalImg').modal('show');
   }
 </script>
 

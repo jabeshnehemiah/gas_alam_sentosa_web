@@ -103,7 +103,7 @@ if (isset($_GET['kode'])) {
             // Initialize datatable
             html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
             const data = response.data;
@@ -111,7 +111,7 @@ if (isset($_GET['kode'])) {
 
             // Set table head and foot
             let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
             let foot = `
@@ -186,10 +186,14 @@ if (isset($_GET['kode'])) {
                         .draw();
                     });
                 });
+              },
+              scrollX: true,
+              scrollCollapse: true,
+              paging: true,
+              fixedColumns: {
+                left: 2
               }
             });
-            $('.dataTables_length').addClass('bs-select');
-            $('#datatable').parent().addClass('table-responsive');
           } else {
             html = '<p class="h3 red-text text-center">No data available</p>';
             $('.table-container').html(html);
@@ -217,7 +221,7 @@ if (isset($_GET['kode'])) {
     const addModal = () => {
       // Initialize modal
       let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form">
@@ -389,7 +393,7 @@ if (isset($_GET['kode'])) {
             formInputs['kota']['data'] = alamats[response.data['provinsi']];
 
             let modalEdit = `
-          <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
+          <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="edit-form">

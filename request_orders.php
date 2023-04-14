@@ -17,6 +17,94 @@ include './head.php';
     <div class="d-flex justify-content-between" id="heading"></div>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <div class="print-container">
+      <div id="print" class="p-5">
+        <div class="d-flex justify-content-between pb-3">
+          <div>
+            <h4>PT Gas Alam Sentosa</h4>
+            <h6>Ruko CBD Puncak 7F Toll</h6>
+            <h6>Jl. Keramat I, Surabaya, Jawa Timur 60229</h6>
+          </div>
+          <div class="text-right">
+            <h2>REQUEST ORDER</h2>
+            <h4 id="print-kode"></h4>
+          </div>
+        </div>
+        <hr class="border-dark">
+        <div class="d-flex justify-content-between pt-3 pb-3">
+          <div class="w-50">
+            <h5>Permintaan Oleh</h5>
+            <div class="d-flex">
+              <div class="w-25">
+                <h6>Nama</h6>
+                <h6>Alamat</h6>
+              </div>
+              <div>
+                <h6>:</h6>
+                <h6>:</h6>
+              </div>
+              <div class="ml-1">
+                <h6 id="print-nama"></h6>
+                <h6 id="print-alamat"></h6>
+              </div>
+            </div>
+          </div>
+          <div class="w-25">
+            <h5>&nbsp;</h5>
+            <div class="d-flex">
+              <div class="w-50">
+                <h6>No. PO</h6>
+                <h6>Tanggal</h6>
+              </div>
+              <div>
+                <h6>:</h6>
+                <h6>:</h6>
+              </div>
+              <div class="ml-1">
+                <h6 id="print-po"></h6>
+                <h6 id="print-tanggal"></h6>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p>Mengajukan permintaan barang-barang sebagai berikut: </p>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">BARANG</th>
+              <th scope="col">HARGA (Rp)</th>
+              <th scope="col">PPN (Rp)</th>
+              <th scope="col">JUMLAH</th>
+              <th scope="col">SATUAN</th>
+              <th scope="col">SUBTOTAL (Rp)</th>
+            </tr>
+          </thead>
+          <tbody id="print-barangs">
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6">Diskon</td>
+              <td id="print-diskon"></td>
+            </tr>
+            <tr>
+              <td colspan="6">Biaya Tambahan</td>
+              <td id="print-biaya"></td>
+            </tr>
+            <tr>
+              <th scope="row" colspan="6">TOTAL (Rp)</th>
+              <th id="print-total"></th>
+            </tr>
+          </tfoot>
+        </table>
+        <div class="d-flex justify-content-end pt-3">
+          <div class="w-25">
+            <h6 class="text-center pb-5 mb-5">Marketing</h6>
+            <hr class="border-dark">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 <script type="text/javascript">
@@ -35,6 +123,12 @@ include './head.php';
     'detail_request_orders': {
       'type': 'detail_request_orders',
       'data': []
+    },
+    'diskon': {
+      'type': 'number',
+    },
+    'biaya_tambahan': {
+      'type': 'number',
     },
     'tanggal_kirim': {
       'type': 'date',
@@ -87,6 +181,9 @@ include './head.php';
     $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
+      data: {
+        'alur': 'Jual'
+      },
       success: response => {
         response = JSON.parse(response);
         if (response.success) {
@@ -180,8 +277,6 @@ include './head.php';
               if (datum[key] != null) {
                 if (key == 'file_po') {
                   row += `<td><a class="btn btn-link p-0 text-primary" target="_blank" href="./files/po/${datum[key]}?t=${Date.now()}">${datum[key]}</a></td>`;
-                } else if (key == 'aktif') {
-                  row += `<td>${datum[key]=='1'?'Aktif':'Draft'}</td>`;
                 } else if (key != 'id' && key != 'detail_pelanggan' && key != 'kode_pelanggan') {
                   row += `<td>${datum[key]}</td>`;
                 }
@@ -193,9 +288,11 @@ include './head.php';
             <td>
               <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}','${datum['kode_pelanggan']}')"><i class="fas fa-edit"></i></button>
             `;
-            <?php if ($_SESSION['role'] < 4) { ?>
-              if (datum['divalidasi_oleh'] == null && datum['aktif'] == 1) {
+            <?php if ($_SESSION['role'] <= 4) { ?>
+              if (datum['konfirmasi'] == null) {
                 row += `<button type="button" class="btn btn-success btn-sm m-0 px-3 validate-button" onClick="validateModal('${datum['id']}','${datum['kode']}')"><i class="fas fa-check-circle"></i></button>`;
+              } else {
+                row += `<button type="button" class="btn btn-default btn-sm m-0 px-3 print-button" onClick="print('${datum['kode']}')"><i class="fas fa-print"></i></button>`;
               }
             <?php } ?>
             row += '</td>';
@@ -262,10 +359,12 @@ include './head.php';
     $('.alert-container').html(alert);
   }
 
+  let counter = 0;
+
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
           <form id="input-form">
@@ -341,6 +440,7 @@ include './head.php';
               <thead>
                 <tr>
                   <th>Barang</th>
+                  <th>Harga Beli</th>
                   <th>Harga Jual</th>
                   <th>Kuantitas</th>
                   <th>PPN</th>
@@ -358,7 +458,7 @@ include './head.php';
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
           <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
-          <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
+          <option></option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
           if (typeof formInputs[key]['data'][0] == 'object') {
@@ -410,7 +510,6 @@ include './head.php';
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
-              <button type="button" class="btn btn-secondary" id="draft-button"><i class="fas fa-file-alt mr-2"></i>Draft</button>
               <button type="submit" class="btn btn-primary" id="simpan-button"><i class="fas fa-save mr-2"></i>Simpan</button>
             </div>
           </form>
@@ -424,15 +523,15 @@ include './head.php';
 
     $('.modal-select').select2({
       theme: 'bootstrap4',
-      width: 'style',
-      dropdownParent: $('.modal')
+      width: 'element',
+      placeholder: 'PILIH SALAH SATU'
     });
 
     $('#pelanggan_id-input').change(() => {
       const selDetail = $('#detail_pelanggan_id-input');
       let pelanggan = $('#pelanggan_id-input').find(':selected').val();
       selDetail.empty();
-      selDetail.append('<option value="" selected hidden>--- PILIH DETAIL PELANGGAN ID ---</option>');
+      selDetail.append('<option></option>');
       $.ajax({
         type: 'POST',
         url: './api/detail_pelanggan_get.php',
@@ -440,7 +539,6 @@ include './head.php';
           'kode': pelanggan
         },
         success: response => {
-          console.log(response);
           response = JSON.parse(response);
           response.data.forEach(datum => {
             selDetail.append(`<option value="${datum.id}">${datum.alamat}</option>`);
@@ -453,46 +551,62 @@ include './head.php';
       selDetail.removeAttr('disabled');
     });
 
-    // Add event listener for save button
-    $('#draft-button').click((event) => {
-      event.preventDefault();
-
-      // Get the form data
-      const form = document.getElementById('input-form');
-      const formData = new FormData(document.getElementById('input-form'));
-      formData.delete('pelanggan_id');
-      formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
-      formData.append('aktif', 0);
-      const inputs = form.querySelectorAll('input, textarea, select');
-      inputs.forEach(input => {
-        if (input.type === 'checkbox' || input.type === 'radio') {
-          if (!input.checked) {
-            formData.set(input.name, '');
-          }
-        } else if (input.value === '') {
-          formData.set(input.name, '');
-        }
-      });
-
-
-      // Send the AJAX request
+    $('#detail_pelanggan_id-input').change(() => {
+      let detail = $('#detail_pelanggan_id-input').find(':selected').val();
       $.ajax({
         type: 'POST',
-        url: './api/request_order_add.php',
-        data: formData,
-        contentType: false,
-        processData: false,
+        url: './api/pipeline_marketing_get_one.php',
+        data: {
+          'detail_pelanggan_id': detail
+        },
         success: response => {
           console.log(response);
           response = JSON.parse(response);
-          $('#modalTambah').modal('hide');
-          $(".modal-backdrop").remove();
-          if (response.success) {
-            showAlert('success', response.message);
-          } else {
-            showAlert('danger', response.message);
+
+          if (!response.data['request_order_id']) {
+            for (const key in formInputs) {
+              if (key == 'detail_request_orders') {
+                $('#tbBarang').html('');
+                response.barangs.forEach(barang => {
+                  let table = `
+                    <tr id="row${counter}">
+                      <td>
+                        <select class="browser-default custom-select modal-select" name="detail_request_orders[${counter}][barang_id]" id="barang${counter}" obChange="showHarga(${counter})" required>
+                          <option></option>
+                    `;
+                  formInputs['detail_request_orders']['data'].forEach(datum => {
+                    table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
+                  })
+                  table += `
+                        </select>
+                      </td>
+                      <td><input type="number" id="harga${counter}" class="form-control validate" disabled></td>
+                      <td><input type="number" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" required></td>
+                      <td><input type="number" name="detail_request_orders[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
+                      <td>
+                        <div class="custom-control custom-checkbox">
+                          <input type="checkbox" class="custom-control-input" id="chk${counter}" name="detail_request_orders[${counter}][ppn]" value="${ppn.jumlah}" checked>
+                          <label class="custom-control-label" for="chk${counter}">${ppn.jumlah}%</label>
+                        </div>
+                      </td>
+                      <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+                    </tr>
+                    `;
+                  $()
+                  counter++;
+                  $('#tbBarang').append(table);
+
+                  $('.modal-select').select2({
+                    theme: 'bootstrap4',
+                    width: 'element',
+                    placeholder: 'PILIH SALAH SATU'
+                  });
+                })
+              } else if (formInputs[key]['type'] != 'select') {
+                $(`#${key}-input`).val(response.data[key]);
+              }
+            }
           }
-          loadPage();
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);
@@ -504,58 +618,61 @@ include './head.php';
     $('#input-form').submit((event) => {
       event.preventDefault();
 
-      // Get the form data
-      const form = document.getElementById('input-form');
-      const formData = new FormData(document.getElementById('input-form'));
-      formData.delete('pelanggan_id');
-      formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
-      formData.append('aktif', 1);
-      const inputs = form.querySelectorAll('input, textarea, select');
-      inputs.forEach(input => {
-        if (input.type === 'checkbox' || input.type === 'radio') {
-          if (!input.checked) {
+      if (!$.trim($("#tbBarang").html())) {
+        alert('Daftar barang tidak boleh kosong.');
+      } else {
+
+        // Get the form data
+        const form = document.getElementById('input-form');
+        const formData = new FormData(document.getElementById('input-form'));
+        formData.delete('pelanggan_id');
+        formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            if (!input.checked) {
+              formData.set(input.name, '');
+            }
+          } else if (input.value === '') {
             formData.set(input.name, '');
           }
-        } else if (input.value === '') {
-          formData.set(input.name, '');
-        }
-      });
+        });
 
 
-      // Send the AJAX request
-      $.ajax({
-        type: 'POST',
-        url: './api/request_order_add.php',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: response => {
-          console.log(response);
-          response = JSON.parse(response);
-          $('#modalTambah').modal('hide');
-          $(".modal-backdrop").remove();
-          if (response.success) {
-            showAlert('success', response.message);
-          } else {
-            showAlert('danger', response.message);
+        // Send the AJAX request
+        $.ajax({
+          type: 'POST',
+          url: './api/request_order_add.php',
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: response => {
+            console.log(response);
+            response = JSON.parse(response);
+            $('#modalTambah').modal('hide');
+            $(".modal-backdrop").remove();
+            if (response.success) {
+              showAlert('success', response.message);
+            } else {
+              showAlert('danger', response.message);
+            }
+            loadPage();
+          },
+          error: (jqXHR, textStatus, errorThrown) => {
+            console.log(textStatus, errorThrown);
           }
-          loadPage();
-        },
-        error: (jqXHR, textStatus, errorThrown) => {
-          console.log(textStatus, errorThrown);
-        }
-      });
+        });
+      }
     });
   }
 
-  let counter = 0;
   const tambahBarang = (e) => {
     e.preventDefault();
     let table = `
       <tr id="row${counter}">
         <td>
-          <select class="browser-default custom-select modal-select" name="detail_request_orders[${counter}][barang_id]" required>
-            <option value="" selected hidden>PILIH BARANG</option>
+          <select class="browser-default custom-select modal-select" name="detail_request_orders[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})" required>
+            <option></option>
       `;
     formInputs['detail_request_orders']['data'].forEach(datum => {
       table += `<option value="${datum.id}">${datum.nama}</option>`;
@@ -563,8 +680,9 @@ include './head.php';
     table += `
           </select>
         </td>
+        <td><input type="number" id="harga${counter}" class="form-control validate" disabled></td>
         <td><input type="number" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" required></td>
-        <td><input type="text" name="detail_request_orders[${counter}][kuantitas]" class="form-control validate" required></td>
+        <td><input type="number" name="detail_request_orders[${counter}][kuantitas]" class="form-control validate" required></td>
         <td>
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="chk${counter}" name="detail_request_orders[${counter}][ppn]" value="${ppn.jumlah}" checked>
@@ -578,8 +696,8 @@ include './head.php';
 
     $('.modal-select').select2({
       theme: 'bootstrap4',
-      width: 'style',
-      dropdownParent: $('.modal')
+      width: 'element',
+      placeholder: 'PILIH SALAH SATU'
     });
 
     counter++;
@@ -588,6 +706,13 @@ include './head.php';
   const hapusBarang = (e, id) => {
     e.preventDefault()
     $(`#${id}`).remove()
+  }
+
+  const showHarga = id => {
+    const barang = formInputs['detail_request_orders']['data'].find(obj => {
+      return obj.id == $(`#barang${id} option:selected`).val()
+    })
+    $(`#harga${id}`).val(barang.harga_beli)
   }
 
   const editModal = (kode, pelanggan) => {
@@ -600,6 +725,7 @@ include './head.php';
       },
       success: response => {
         response = JSON.parse(response);
+        console.log(response)
         if (response.success) {
           $.ajax({
             type: 'POST',
@@ -611,7 +737,7 @@ include './head.php';
               response1 = JSON.parse(response1);
 
               let modalEdit = `
-          <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
+          <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
               <div class="modal-content">
                 <form id="edit-form">
@@ -669,6 +795,7 @@ include './head.php';
                         <thead>
                           <tr>
                             <th>Barang</th>
+                            <th>Harga Beli</th>
                             <th>Harga Jual</th>
                             <th>Kuantitas</th>
                             <th>PPN</th>
@@ -681,8 +808,8 @@ include './head.php';
                     let table = `
                     <tr id="row${counter}">
                       <td>
-                        <select class="browser-default custom-select modal-select" name="detail_request_orders[${counter}][barang_id]" required>
-                          <option value="" selected hidden>PILIH BARANG</option>
+                        <select class="browser-default custom-select modal-select" name="detail_request_orders[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})" required>
+                          <option></option>
                     `;
                     formInputs['detail_request_orders']['data'].forEach(datum => {
                       table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
@@ -690,8 +817,9 @@ include './head.php';
                     table += `
                         </select>
                       </td>
+                      <td><input type="number" id="harga${counter}" value="${barang.harga_beli}" class="form-control validate" disabled></td>
                       <td><input type="number" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
-                      <td><input type="text" name="detail_request_orders[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
+                      <td><input type="number" name="detail_request_orders[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
                       <td>
                         <div class="custom-control custom-checkbox">
                           <input type="checkbox" class="custom-control-input" id="chk${counter}" name="detail_request_orders[${counter}][ppn]" value="${barang.ppn!=0?barang.ppn:ppn.jumlah}" ${barang.ppn!=0?'checked':''}>
@@ -795,7 +923,6 @@ include './head.php';
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
-                    <button type="button" class="btn btn-secondary" id="draft-button"><i class="fas fa-file-alt mr-2"></i>Draft</button>
                     <button type="submit" class="btn btn-primary" id="simpan-button"><i class="fas fa-save mr-2"></i>Simpan</button>
                   </div>
                 </form>
@@ -809,8 +936,8 @@ include './head.php';
 
               $('.modal-select').select2({
                 theme: 'bootstrap4',
-                width: 'style',
-                dropdownParent: $('.modal')
+                width: 'element',
+                placeholder: 'PILIH SALAH SATU'
               });
 
               const selDetail = $('#detail_pelanggan_id-input');
@@ -828,7 +955,7 @@ include './head.php';
                 const selDetail = $('#detail_pelanggan_id-input');
                 let pelanggan = $('#pelanggan_id-input').find(':selected').val();
                 selDetail.empty();
-                selDetail.append('<option value="" selected hidden>--- PILIH DETAIL PELANGGAN ID ---</option>');
+                selDetail.append('<option></option>');
                 $.ajax({
                   type: 'POST',
                   url: './api/detail_pelanggan_get.php',
@@ -849,76 +976,51 @@ include './head.php';
                 selDetail.removeAttr('disabled');
               });
 
-              // Add event listener for save button
-              $('#draft-button').click((event) => {
-                event.preventDefault();
-
-                // Get the form data
-                const form = document.getElementById('edit-form');
-                const formData = new FormData(document.getElementById('edit-form'));
-                formData.delete('pelanggan_id');
-                formData.append('id', response.data.id);
-                formData.append('kode', kode);
-                formData.append('aktif', 0);
-
-                // Send the AJAX request
-                $.ajax({
-                  type: 'POST',
-                  url: './api/request_order_edit.php',
-                  data: formData,
-                  contentType: false,
-                  processData: false,
-                  success: response => {
-                    console.log(response);
-                    response = JSON.parse(response);
-                    $('#modalUbah').modal('hide');
-                    $(".modal-backdrop").remove();
-                    if (response.success) {
-                      showAlert('success', response.message);
-                    } else {
-                      showAlert('danger', response.message);
-                    }
-                    loadPage();
-                  },
-                  error: (jqXHR, textStatus, errorThrown) => {
-                    console.log(textStatus, errorThrown);
-                  }
-                });
-              });
-
               $('#edit-form').submit(event => {
                 event.preventDefault();
 
-                // Get the form data
-                const form = document.getElementById('edit-form');
-                const formData = new FormData(document.getElementById('edit-form'));
-                formData.delete('pelanggan_id');
-                formData.append('id', response.data.id);
-                formData.append('kode', kode);
-                formData.append('aktif', 1);
-
-                // Send the AJAX request
-                $.ajax({
-                  type: 'POST',
-                  url: './api/request_order_edit.php',
-                  data: formData,
-                  contentType: false,
-                  processData: false,
-                  success: response => {
-                    response = JSON.parse(response);
-                    $('#modalUbah').modal('hide');
-                    $(".modal-backdrop").remove();
-                    if (response.success) {
-                      showAlert('success', response.message);
-                    } else {
-                      showAlert('danger', response.message);
+                if (!$.trim($("#tbBarang").html())) {
+                  alert('Daftar barang tidak boleh kosong.');
+                } else {
+                  // Get the form data
+                  const form = document.getElementById('edit-form');
+                  const formData = new FormData(document.getElementById('edit-form'));
+                  formData.delete('pelanggan_id');
+                  formData.append('id', response.data.id);
+                  const inputs = form.querySelectorAll('input, textarea, select');
+                  inputs.forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                      if (!input.checked) {
+                        formData.set(input.name, '');
+                      }
+                    } else if (input.value === '') {
+                      formData.set(input.name, '');
                     }
-                    loadPage();
-                  },
-                  error: (jqXHR, textStatus, errorThrown) => {
-                    console.log(textStatus, errorThrown);
-                  }
-                });
+                  });
+
+                  // Send the AJAX request
+                  $.ajax({
+                    type: 'POST',
+                    url: './api/request_order_edit.php',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: response => {
+                      response = JSON.parse(response);
+                      $('#modalUbah').modal('hide');
+                      $(".modal-backdrop").remove();
+                      if (response.success) {
+                        showAlert('success', response.message);
+                      } else {
+                        showAlert('danger', response.message);
+                      }
+                      loadPage();
+                    },
+                    error: (jqXHR, textStatus, errorThrown) => {
+                      console.log(textStatus, errorThrown);
+                    }
+                  });
+                }
               });
             },
             error: (jqXHR, textStatus, errorThrown) => {
@@ -935,18 +1037,18 @@ include './head.php';
 
   const validateModal = (id, kode) => {
     let modalValidate = `
-          <div class="modal fade" id="modalValidate" tabindex="-1" role="dialog" aria-labelledby="modalValidateTitle" aria-hidden="true">
+          <div class="modal fade" id="modalValidate" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalValidateTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="validate-form">
                   <div class="modal-header">
-                    <h5 class="modal-title">Validasi Request Order ${kode}</h5>
+                    <h5 class="modal-title">Konfirmasi Request Order ${kode}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
                   </div>
                   <div class="modal-body">
-                  <h2>Apakah Anda yakin akan memvalidasi Request Order ${kode}?</h2>
+                  <h2>Apakah Anda yakin akan mengonfirmasi Request Order ${kode}?</h2>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
@@ -987,7 +1089,61 @@ include './head.php';
         }
       });
     })
+  }
 
+  const print = (kode) => {
+    $.ajax({
+      type: 'POST',
+      url: './api/request_order_get_one.php',
+      data: {
+        'kode': kode,
+      },
+      success: response => {
+        response = JSON.parse(response);
+        console.log(response)
+        if (response.success) {
+          const date = new Date(response.data.tanggal_dibuat)
+          $('#print-kode').text(response.data.kode);
+          $('#print-nama').text(response.data.pelanggan);
+          $('#print-alamat').text(response.data.alamat);
+          $('#print-po').text(response.data.no_po);
+          $('#print-diskon').text(response.data.diskon);
+          $('#print-biaya').text(response.data.biaya_tambahan);
+          $('#print-tanggal').text(date.toLocaleDateString('id', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }));
+        }
+        let total = response.data.biaya_tambahan - response.data.diskon
+        let table = '';
+        let num = 1;
+        response.barangs.forEach(barang => {
+          table += `
+          <tr>
+            <td>${num}</td>
+            <td>${barang.barang}</td>
+            <td>${barang.harga_jual}</td>
+            <td>${barang.ppn*barang.harga_jual/100}</td>
+            <td>${barang.kuantitas}</td>
+            <td>${barang.satuan}</td>
+            <td>${barang.subtotal}</td>
+          </tr>
+          `;
+          num++
+          total += barang.subtotal;
+        });
+        $('#print-barangs').html(table);
+        $('#print-total').text(total);
+
+        document.title = response.data.kode.replace('/', '_');
+        window.print();
+        document.title = 'GAS';
+      },
+      error: (jqXHR, textStatus, errorThrown) => {
+        console.log(textStatus, errorThrown);
+      }
+    });
   }
 </script>
 

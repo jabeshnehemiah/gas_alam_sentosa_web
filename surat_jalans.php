@@ -4,14 +4,6 @@
 <?php
 include './head.php';
 ?>
-<style>
-  #kode-input {
-    text-transform: uppercase;
-  }
-  #pdf table, th, tr,td{
-    border:1px solid black !important;
-  }
-</style>
 
 <body>
   <?php include './navbar.php'; ?>
@@ -20,8 +12,8 @@ include './head.php';
     <div class="d-flex justify-content-between" id="heading"></div>
     <div class="table-container"></div>
     <div class="modal-container"></div>
-    <div class="pdf-container">
-      <div id="pdf" class="p-5 border" style="font-family: monospace" ;>
+    <div class="print-container">
+      <div id="print" class="p-5">
         <div class="d-flex justify-content-between pb-3">
           <div>
             <h4>PT Gas Alam Sentosa</h4>
@@ -30,54 +22,72 @@ include './head.php';
           </div>
           <div class="text-right">
             <h2>SURAT JALAN</h2>
-            <h4 id="pdf-kode">SJ/IT/2023/04/0001</h4>
+            <h4 id="print-kode"></h4>
           </div>
         </div>
         <hr class="border-dark">
-        <div class="d-flex justify-content-between pt-3 pb-5">
-          <div>
+        <div class="d-flex justify-content-between pt-3 pb-3">
+          <div class="w-50">
             <h5>Kepada Yth.</h5>
-            <h6>PT Perusahaan Dummy</h6>
-            <h6>Jl. Dummy Detail, Surabaya, Jawa Timur 60222</h6>
-            <h6>08123456789</h6>
+            <div class="d-flex">
+              <div class="w-25">
+                <h6>Nama</h6>
+                <h6>Alamat</h6>
+              </div>
+              <div>
+                <h6>:</h6>
+                <h6>:</h6>
+              </div>
+              <div class="ml-1">
+                <h6 id="print-nama"></h6>
+                <h6 id="print-alamat"></h6>
+              </div>
+            </div>
           </div>
-          <div>
+          <div class="w-25">
             <h5>&nbsp;</h5>
-            <h6>Nomor PO : 12345</h6>
-            <h6>Tanggal &nbsp;: 2023-04-10</h6>
+            <div class="d-flex">
+              <div class="w-50">
+                <h6>No. PO</h6>
+                <h6>Tanggal</h6>
+              </div>
+              <div>
+                <h6>:</h6>
+                <h6>:</h6>
+              </div>
+              <div class="ml-1">
+                <h6 id="print-po"></h6>
+                <h6 id="print-tanggal"></h6>
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-          <table class="table" style="border: 1px solid black;">
-            <thead>
-              <tr>
-                <th scope="col">No</th>
-                <th scope="col">Barang</th>
-                <th scope="col">Jumlah</th>
-                <th scope="col">Satuan</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">1</th>
-                <td>Sit</td>
-                <td>Amet</td>
-                <td>Consectetur</td>
-              </tr>
-              <tr>
-                <th scope="row">2</th>
-                <td>Adipisicing</td>
-                <td>Elit</td>
-                <td>Sint</td>
-              </tr>
-              <tr>
-                <th scope="row">3</th>
-                <td>Hic</td>
-                <td>Fugiat</td>
-                <td>Temporibus</td>
-              </tr>
-            </tbody>
-          </table>
+        <p>Dikirimkan barang-barang sebagai berikut: </p>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">BARANG</th>
+              <th scope="col">KUANTITAS</th>
+              <th scope="col">SATUAN</th>
+            </tr>
+          </thead>
+          <tbody id="print-barangs">
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between pt-3">
+          <div class="w-25">
+            <h6 class="text-center pb-5 mb-5">Pelanggan</h6>
+            <hr class="border-dark">
+          </div>
+          <div class="w-25">
+            <h6 class="text-center pb-5 mb-5">Driver</h6>
+            <hr class="border-dark">
+          </div>
+          <div class="w-25">
+            <h6 class="text-center pb-5 mb-5">Admin</h6>
+            <hr class="border-dark">
+          </div>
         </div>
       </div>
     </div>
@@ -90,9 +100,15 @@ include './head.php';
       'data': [],
       'required': true
     },
-    'kuantitas': {
-      'type': 'number',
+    'detail_surat_jalans': {
+      'type': 'detail_surat_jalans',
       'required': true
+    },
+    'diskon': {
+      'type': 'number',
+    },
+    'biaya_tambahan': {
+      'type': 'number',
     },
     'tanggal_kirim': {
       'type': 'date',
@@ -105,20 +121,65 @@ include './head.php';
 
   $(document).ready(function() {
     loadRequests();
+    loadBarangs();
+    loadPpn();
+
     loadPage();
 
     $('.alert').alert();
   });
+
+  let ppn = {};
 
   const loadRequests = () => {
     // Send the AJAX request
     $.ajax({
       type: 'POST',
       url: './api/request_order_get.php',
+      data: {
+        'dari': 'surat_jalan'
+      },
       success: response => {
         response = JSON.parse(response);
         if (response.success) {
           formInputs['request_order_id']['data'] = response.data;
+        }
+      },
+      error: (jqXHR, textStatus, errorThrown) => {
+        console.log(textStatus, errorThrown);
+      }
+    });
+  }
+
+  const loadBarangs = () => {
+    // Send the AJAX request
+    $.ajax({
+      type: 'POST',
+      url: './api/barang_get.php',
+      data: {
+        'alur': 'Jual'
+      },
+      success: response => {
+        response = JSON.parse(response);
+        if (response.success) {
+          formInputs['detail_surat_jalans']['data'] = response.data;
+        }
+      },
+      error: (jqXHR, textStatus, errorThrown) => {
+        console.log(textStatus, errorThrown);
+      }
+    });
+  }
+
+  const loadPpn = () => {
+    // Send the AJAX request
+    $.ajax({
+      type: 'POST',
+      url: './api/ppn_get.php',
+      success: response => {
+        response = JSON.parse(response);
+        if (response.success) {
+          ppn = response.data[0];
         }
       },
       error: (jqXHR, textStatus, errorThrown) => {
@@ -147,7 +208,7 @@ include './head.php';
           // Initialize datatable
           html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
           const data = response.data;
@@ -155,7 +216,7 @@ include './head.php';
 
           // Set table head and foot
           let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
           let foot = `
@@ -165,7 +226,7 @@ include './head.php';
 
           // Set head, foot
           keys.forEach(key => {
-            if (key != 'id') {
+            if (key != 'id' && key != 'kode_pelanggan') {
               head += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
               foot += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
             }
@@ -188,7 +249,7 @@ include './head.php';
             // Set row data
             let row = `<tr>`;
             keys.forEach(key => {
-              if (key != 'id') {
+              if (key != 'id' && key != 'kode_pelanggan') {
                 if (datum[key] != null) {
                   row += `<td>${datum[key]}</td>`;
                 } else {
@@ -199,7 +260,7 @@ include './head.php';
             row += `
             <td>
               <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}')"><i class="fas fa-edit"></i></button>
-              <button type="button" class="btn btn-primary btn-sm m-0 px-3 print-button" onClick="printPdf('${datum['kode']}')"><i class="fas fa-file-pdf"></i></button>
+              <button type="button" class="btn btn-default btn-sm m-0 px-3 print-button" onClick="print('${datum['kode']}')"><i class="fas fa-print"></i></button>
             </td>
             `;
             row += `</tr>`;
@@ -231,10 +292,14 @@ include './head.php';
                       .draw();
                   });
               });
+            },
+            scrollX: true,
+            scrollCollapse: true,
+            paging: true,
+            fixedColumns: {
+              left: 2,
             }
           });
-          $('.dataTables_length').addClass('bs-select');
-          $('#datatable').parent().addClass('table-responsive');
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);
@@ -259,11 +324,13 @@ include './head.php';
     $('.alert-container').html(alert);
   }
 
+  let counter = 0;
+
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form">
             <div class="modal-header">
@@ -322,17 +389,39 @@ include './head.php';
           }
         }
         modalAdd += '</div>';
+      } else if (formInputs[key]['type'] == 'detail_surat_jalans') {
+        modalAdd += `
+        <div class="mb-4">
+          <label>daftar barang</label><button class="btn btn-primary px-2 py-1" onClick="tambahBarang(event)"><i class="fas fa-plus"></i></button>
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th>Barang</th>
+                  <th>Harga Beli</th>
+                  <th>Harga Jual</th>
+                  <th>Kuantitas</th>
+                  <th>PPN</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tbBarang">
+              </tbody>
+            </table>
+          </div>
+        </div>
+        `;
       } else if (formInputs[key]['type'] == 'select') {
         modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
-          <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
+          <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <option></option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
           if (typeof formInputs[key]['data'][0] == 'object') {
             formInputs[key]['data'].forEach(datum => {
-              modalAdd += `<option value="${datum.id}">${datum.kode}</option>`;
+              modalAdd += `<option value="${datum.id}">${datum.kode} ${datum.pelanggan} (${datum.alamat})</option>`;
             });
           } else {
             formInputs[key]['data'].forEach(datum => {
@@ -380,31 +469,75 @@ include './head.php';
     $('.modal-container').html(modalAdd);
     $('#modalTambah').modal('show');
 
-    $('#pelanggan_id-input').change(() => {
-      const selDetail = $('#detail_pelanggan_id-input');
-      let pelanggan = $('#pelanggan_id-input').find(':selected').val();
-      selDetail.empty();
-      selDetail.append('<option value="" selected hidden>--- PILIH DETAIL PELANGGAN ID ---</option>');
+    $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'element',
+      placeholder: 'PILIH SALAH SATU'
+    });
+
+    $('#request_order_id-input').change(() => {
+      let order = $('#request_order_id-input').find(':selected').val();
       $.ajax({
         type: 'POST',
-        url: './api/detail_pelanggan_get.php',
+        url: './api/request_order_get_one.php',
         data: {
-          'kode': pelanggan
+          'id': order,
         },
         success: response => {
           console.log(response);
           response = JSON.parse(response);
-          response.data.forEach(datum => {
-            selDetail.append(`<option value="${datum.id}">${datum.alamat}</option>`);
-          });
+
+          if (!response.data['request_order_id']) {
+
+            for (const key in formInputs) {
+              if (key == 'detail_surat_jalans') {
+                $('#tbBarang').html('');
+                response.barangs.forEach(barang => {
+                  let table = `
+                    <tr id="row${counter}">
+                      <td>
+                        <select class="browser-default custom-select modal-select" name="detail_surat_jalans[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})" required>
+                          <option></option>
+                    `;
+                  formInputs['detail_surat_jalans']['data'].forEach(datum => {
+                    table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
+                  })
+                  table += `
+                        </select>
+                      </td>
+                      <td><input type="number" id="harga${counter}" class="form-control validate" value="${barang.harga_beli}" disabled></td>
+                      <td><input type="number" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
+                      <td><input type="number" name="detail_surat_jalans[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
+                      <td>
+                        <div class="custom-control custom-checkbox">
+                          <input type="checkbox" class="custom-control-input" id="chk${counter}" name="detail_surat_jalans[${counter}][ppn]" value="${barang.ppn!=0?barang.ppn:ppn.jumlah}" ${barang.ppn!=0?'checked':''}>
+                          <label class="custom-control-label" for="chk${counter}">${barang.ppn!=0?barang.ppn:ppn.jumlah}%</label>
+                        </div>
+                      </td>
+                      <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+                    </tr>
+                    `;
+                  $()
+                  counter++;
+                  $('#tbBarang').append(table);
+
+                  $('.modal-select').select2({
+                    theme: 'bootstrap4',
+                    width: 'element',
+                    placeholder: 'PILIH SALAH SATU'
+                  });
+                })
+              } else if (formInputs[key]['type'] != 'select') {
+                $(`#${key}-input`).val(response.data[key]);
+              }
+            }
+          }
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);
         }
       });
-      selDetail.removeAttr('disabled');
     });
-
 
     // Add event listener for save button
     $('#input-form').submit((event) => {
@@ -451,6 +584,55 @@ include './head.php';
     });
   }
 
+  const tambahBarang = (e) => {
+    e.preventDefault();
+    let table = `
+      <tr id="row${counter}">
+        <td>
+          <select class="browser-default custom-select modal-select" name="detail_surat_jalans[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})" required>
+            <option></option>
+      `;
+    formInputs['detail_surat_jalans']['data'].forEach(datum => {
+      table += `<option value="${datum.id}">${datum.nama}</option>`;
+    })
+    table += `
+          </select>
+        </td>
+        <td><input type="number" id="harga${counter}" class="form-control validate" disabled></td>
+        <td><input type="number" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" required></td>
+        <td><input type="number" name="detail_surat_jalans[${counter}][kuantitas]" class="form-control validate" required></td>
+        <td>
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="chk${counter}" name="detail_surat_jalans[${counter}][ppn]" value="${ppn.jumlah}" checked>
+            <label class="custom-control-label" for="chk${counter}">${ppn.jumlah}%</label>
+          </div>
+        </td>
+        <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+      </tr>
+      `;
+    $('#tbBarang').append(table);
+
+    $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'element',
+      placeholder: 'PILIH SALAH SATU'
+    });
+
+    counter++;
+  }
+
+  const hapusBarang = (e, id) => {
+    e.preventDefault()
+    $(`#${id}`).remove()
+  }
+
+  const showHarga = id => {
+    const barang = formInputs['detail_surat_jalans']['data'].find(obj => {
+      return obj.id == $(`#barang${id} option:selected`).val()
+    })
+    $(`#harga${id}`).val(barang.harga_beli)
+  }
+
   const editModal = (kode) => {
     // Send the AJAX request
     $.ajax({
@@ -461,14 +643,15 @@ include './head.php';
       },
       success: response => {
         response = JSON.parse(response);
+        console.log(response)
         if (response.success) {
           let modalEdit = `
-          <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="edit-form">
                   <div class="modal-header">
-                    <h5 class="modal-title">Ubah ${response.data.kode}</h5>
+                    <h5 class="modal-title">Ubah ${kode}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -505,6 +688,59 @@ include './head.php';
                 <input type="date" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}">
               </div>
               `;
+            } else if (formInputs[key]['type'] == 'detail_surat_jalans') {
+              modalEdit += `
+                  <div class="mb-4">
+                    <label>daftar barang</label><button class="btn btn-primary px-2 py-1" onClick="tambahBarang(event)"><i class="fas fa-plus"></i></button>
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-sm">
+                        <thead>
+                          <tr>
+                            <th>Barang</th>
+                            <th>Harga Beli</th>
+                            <th>Harga Jual</th>
+                            <th>Kuantitas</th>
+                            <th>PPN</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbBarang">
+                  `;
+              response.barangs.forEach(barang => {
+                let table = `
+                    <tr id="row${counter}">
+                      <td>
+                        <select class="browser-default custom-select modal-select" name="detail_surat_jalans[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})" required>
+                          <option></option>
+                    `;
+                formInputs['detail_surat_jalans']['data'].forEach(datum => {
+                  table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
+                })
+                table += `
+                        </select>
+                      </td>
+                      <td><input type="number" id="harga${counter}" class="form-control validate" value="${barang.harga_beli}" disabled></td>
+                      <td><input type="number" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
+                      <td><input type="number" name="detail_surat_jalans[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
+                      <td>
+                        <div class="custom-control custom-checkbox">
+                          <input type="checkbox" class="custom-control-input" id="chk${counter}" name="detail_surat_jalans[${counter}][ppn]" value="${barang.ppn!=0?barang.ppn:ppn.jumlah}" ${barang.ppn!=0?'checked':''}>
+                          <label class="custom-control-label" for="chk${counter}">${barang.ppn!=0?barang.ppn:ppn.jumlah}%</label>
+                        </div>
+                      </td>
+                      <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+                    </tr>
+                    `;
+                modalEdit += table;
+                counter++;
+
+              })
+              modalEdit += `
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  `;
             } else if (formInputs[key]['type'] == 'checkbox') {
               modalEdit += `
                   <div class="mb-4">
@@ -528,15 +764,15 @@ include './head.php';
               modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
               `;
               if (Array.isArray(formInputs[key]['data'])) {
                 if (typeof formInputs[key]['data'][0] == 'object') {
                   formInputs[key]['data'].forEach(datum => {
                     if (response.data[key] == datum) {
-                      modalEdit += `<option value="${datum.id}" selected>${datum.kode}</option>`;
+                      modalEdit += `<option value="${datum.id}" selected>${datum.kode}  ${datum.pelanggan}</option>`;
                     } else {
-                      modalEdit += `<option value="${datum.id}">${datum.kode}</option>`;
+                      modalEdit += `<option value="${datum.id}">${datum.kode} ${datum.pelanggan}</option>`;
                     }
                   });
                 } else {
@@ -592,6 +828,12 @@ include './head.php';
           $('.modal-container').html(modalEdit);
           $('#modalUbah').modal('show');
 
+          $('.modal-select').select2({
+            theme: 'bootstrap4',
+            width: 'element',
+            placeholder: 'PILIH SALAH SATU'
+          });
+
           $('#edit-form').submit(event => {
             event.preventDefault();
 
@@ -599,6 +841,7 @@ include './head.php';
             const form = document.getElementById('edit-form')
             const formData = new FormData(form);
             formData.append('kode', kode);
+            formData.append('id', response.data.id);
             const inputs = form.querySelectorAll('input, textarea, select');
             inputs.forEach(input => {
               if (input.type === 'checkbox' || input.type === 'radio') {
@@ -643,9 +886,51 @@ include './head.php';
     });
   }
 
-  const printPdf = () => {
-    const pdf = document.getElementById('pdf');
-    html2pdf(pdf);
+  const print = (kode) => {
+    $.ajax({
+      type: 'POST',
+      url: './api/surat_jalan_get_one.php',
+      data: {
+        'kode': kode,
+      },
+      success: response => {
+        response = JSON.parse(response);
+        console.log(response)
+        if (response.success) {
+          const date = new Date(response.data.tanggal_dibuat)
+          $('#print-kode').text(response.data.kode);
+          $('#print-nama').text(response.data.pelanggan);
+          $('#print-alamat').text(response.data.alamat);
+          $('#print-po').text(response.data.no_po);
+          $('#print-tanggal').text(date.toLocaleDateString('id', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }));
+        }
+        let table = '';
+        let num = 1;
+        response.barangs.forEach(barang => {
+          table += `
+          <tr>
+            <td>${num}</td>
+            <td>${barang.barang}</td>
+            <td>${barang.kuantitas}</td>
+            <td>${barang.satuan}</td>
+          </tr>
+          `;
+          num++
+        });
+        $('#print-barangs').html(table);
+
+        document.title = response.data.kode.replace('/', '_');
+        window.print();
+        document.title = 'GAS';
+      },
+      error: (jqXHR, textStatus, errorThrown) => {
+        console.log(textStatus, errorThrown);
+      }
+    });
   }
 </script>
 

@@ -18,17 +18,17 @@ include './head.php';
       <h1>PIPELINE MARKETING</h1>
       <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
     </div>
-    <div class="param-container d-flex py-3">
-      <div class="mr-3">
-        <p>tanggal awal</p>
+    <div class="param-container py-3">
+      <div class="py-2">
+        <h6>tanggal awal</h6>
         <input type="date" id="param-awal" class="form-control param" value="<?php echo date('Y-m-d', strtotime('-1 month')); ?>">
       </div>
-      <div class="mr-3">
-        <p>tanggal akhir</p>
+      <div class="py-2">
+        <h6>tanggal akhir</h6>
         <input type="date" id="param-akhir" class="form-control param" value="<?php echo date('Y-m-d'); ?>">
       </div>
-      <div class="mr-3">
-        <p>pelanggan</p>
+      <div class="py-2">
+        <h6>pelanggan</h6>
         <select class="param" id="param-pelanggan">
         </select>
       </div>
@@ -68,6 +68,8 @@ include './head.php';
     },
   };
 
+  const tanggal = '<?php echo date('Y-m-d'); ?>'
+
   $(document).ready(function() {
     loadPelanggans();
     loadBarangs();
@@ -78,7 +80,8 @@ include './head.php';
 
     $('#param-pelanggan').select2({
       theme: 'bootstrap4',
-      width: 'style',
+      width: 'element',
+      placeholder:'PILIH SALAH SATU'
     });
 
     $('.alert').alert();
@@ -114,6 +117,9 @@ include './head.php';
     $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
+      data:{
+        'alur':'Jual'
+      },
       success: response => {
         response = JSON.parse(response);
         if (response.success) {
@@ -194,11 +200,11 @@ include './head.php';
                 }
               }
             });
-            row += `
-            <td>
-              <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['id']}','${datum['kode_pelanggan']}')"><i class="fas fa-edit"></i></button>
-            </td>
-            `;
+            row += '<td>';
+            if (tanggal == datum['tanggal_dibuat']) {
+              row += `<button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['id']}','${datum['kode_pelanggan']}')"><i class="fas fa-edit"></i></button>`;
+            }
+            row += '</td>'
             row += `</tr>`;
             body += row;
           });
@@ -259,10 +265,12 @@ include './head.php';
     $('.alert-container').html(alert);
   }
 
+  let counter = 0;
+
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form">
@@ -328,7 +336,7 @@ include './head.php';
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
           <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
-          <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
+          <option></option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
           if (typeof formInputs[key]['data'][0] == 'object') {
@@ -383,15 +391,15 @@ include './head.php';
 
     $('.modal-select').select2({
       theme: 'bootstrap4',
-      width: 'style',
-      dropdownParent: $('.modal')
+      width: 'element',
+      placeholder:'PILIH SALAH SATU'
     });
 
     $('#pelanggan_id-input').change(() => {
       const selDetail = $('#detail_pelanggan_id-input');
       let pelanggan = $('#pelanggan_id-input').find(':selected').val();
       selDetail.empty();
-      selDetail.append('<option value="" selected hidden>--- PILIH DETAIL PELANGGAN ID ---</option>');
+      selDetail.append('<option></option>');
       $.ajax({
         type: 'POST',
         url: './api/detail_pelanggan_get.php',
@@ -399,7 +407,6 @@ include './head.php';
           'kode': pelanggan
         },
         success: response => {
-          console.log(response);
           response = JSON.parse(response);
           response.data.forEach(datum => {
             selDetail.append(`<option value="${datum.id}">${datum.alamat}</option>`);
@@ -410,6 +417,62 @@ include './head.php';
         }
       });
       selDetail.removeAttr('disabled');
+    });
+
+    $('#detail_pelanggan_id-input').change(() => {
+      let detail = $('#detail_pelanggan_id-input').find(':selected').val();
+      $.ajax({
+        type: 'POST',
+        url: './api/pipeline_marketing_get_one.php',
+        data: {
+          'detail_pelanggan_id': detail
+        },
+        success: response => {
+          console.log(response);
+          response = JSON.parse(response);
+
+          for (const key in formInputs) {
+            if (key == 'detail_pipeline_marketings') {
+              $('#tbBarang').html('');
+              response.barangs.forEach(barang => {
+                let table = `
+                    <tr id="row${counter}">
+                      <td>
+                        <select class="browser-default custom-select modal-select" name="detail_pipeline_marketings[${counter}][barang_id]" required>
+                          <option></option>
+                    `;
+                formInputs['detail_pipeline_marketings']['data'].forEach(datum => {
+                  table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
+                })
+                table += `
+                        </select>
+                      </td>
+                      <td><input type="number" name="detail_pipeline_marketings[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
+                      <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+                    </tr>
+                    `;
+                $()
+                counter++;
+                $('#tbBarang').append(table);
+
+                $('.modal-select').select2({
+                  theme: 'bootstrap4',
+                  width: 'element',
+                  placeholder:'PILIH SALAH SATU'
+                });
+              })
+            } else if (key == 'status_pelanggan') {
+              $('input:radio').prop('checked', false);
+              $(`#${response.data['status_pelanggan']}`).prop('checked', true);
+            } else if (formInputs[key]['type'] != 'select') {
+              $(`#${key}-input`).val(response.data[key]);
+            }
+          }
+        },
+        error: (jqXHR, textStatus, errorThrown) => {
+          console.log(textStatus, errorThrown);
+        }
+      });
     });
 
 
@@ -460,14 +523,13 @@ include './head.php';
     });
   }
 
-  let counter = 0;
   const tambahBarang = (e) => {
     e.preventDefault();
     let table = `
       <tr id="row${counter}">
         <td>
           <select class="browser-default custom-select modal-select" name="detail_pipeline_marketings[${counter}][barang_id]" required>
-            <option value="" selected hidden>PILIH BARANG</option>
+            <option></option>
       `;
     formInputs['detail_pipeline_marketings']['data'].forEach(datum => {
       table += `<option value="${datum.id}">${datum.nama}</option>`;
@@ -475,7 +537,7 @@ include './head.php';
     table += `
           </select>
         </td>
-        <td><input type="text" name="detail_pipeline_marketings[${counter}][kuantitas]" class="form-control validate" required></td>
+        <td><input type="number" name="detail_pipeline_marketings[${counter}][kuantitas]" class="form-control validate" required></td>
         <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
       </tr>
       `;
@@ -483,8 +545,8 @@ include './head.php';
 
     $('.modal-select').select2({
       theme: 'bootstrap4',
-      width: 'style',
-      dropdownParent: $('.modal')
+      width: 'element',
+      placeholder:'PILIH SALAH SATU'
     });
 
     counter++;
@@ -505,6 +567,7 @@ include './head.php';
       },
       success: response => {
         response = JSON.parse(response);
+        console.log(response)
         if (response.success) {
           $.ajax({
             type: 'POST',
@@ -516,7 +579,7 @@ include './head.php';
               response1 = JSON.parse(response1);
 
               let modalEdit = `
-          <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
+          <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="edit-form">
@@ -578,7 +641,7 @@ include './head.php';
                     <tr id="row${counter}">
                       <td>
                         <select class="browser-default custom-select modal-select" name="detail_pipeline_marketings[${counter}][barang_id]" required>
-                          <option value="" selected hidden>PILIH BARANG</option>
+                          <option></option>
                     `;
                     formInputs['detail_pipeline_marketings']['data'].forEach(datum => {
                       table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
@@ -586,14 +649,7 @@ include './head.php';
                     table += `
                         </select>
                       </td>
-                      <td><input type="number" name="detail_pipeline_marketings[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
-                      <td><input type="text" name="detail_pipeline_marketings[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
-                      <td>
-                        <div class="custom-control custom-checkbox">
-                          <input type="checkbox" class="custom-control-input" id="chk${counter}" name="detail_pipeline_marketings[${counter}][ppn]" value="${barang.ppn!=0?barang.ppn:ppn.jumlah}" ${barang.ppn!=0?'checked':''}>
-                          <label class="custom-control-label" for="chk${counter}">${barang.ppn!=0?barang.ppn:ppn.jumlah}%</label>
-                        </div>
-                      </td>
+                      <td><input type="number" name="detail_pipeline_marketings[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
                       <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
                     </tr>
                     `;
@@ -677,8 +733,8 @@ include './head.php';
 
               $('.modal-select').select2({
                 theme: 'bootstrap4',
-                width: 'style',
-                dropdownParent: $('.modal')
+                width: 'element',
+                placeholder:'PILIH SALAH SATU'
               });
 
               const selDetail = $('#detail_pelanggan_id-input');
@@ -696,7 +752,7 @@ include './head.php';
                 const selDetail = $('#detail_pelanggan_id-input');
                 let pelanggan = $('#pelanggan_id-input').find(':selected').val();
                 selDetail.empty();
-                selDetail.append('<option value="" selected hidden>--- PILIH DETAIL PELANGGAN ID ---</option>');
+                selDetail.append('<option></option>');
                 $.ajax({
                   type: 'POST',
                   url: './api/detail_pelanggan_get.php',

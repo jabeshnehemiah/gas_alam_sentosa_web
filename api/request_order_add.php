@@ -11,17 +11,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $sql = "SELECT tanggal_dibuat FROM request_orders WHERE detail_pelanggan_id = ? ORDER BY id DESC LIMIT 1";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param('ss', $_SESSION['id'], $_POST['detail_pelanggan_id']);
+    $stmt->bind_param('s', $_POST['detail_pelanggan_id']);
     $stmt->execute();
     $res = $stmt->get_result();
 
-    $tanggal="";
+    $tanggal = "";
     while ($row = $res->fetch_assoc()) {
       // Put data into array
       $tanggal = $row['tanggal_dibuat'];
     }
 
-    if($tanggal==date('Y-m-d')){
+    if ($tanggal == date('Y-m-d')) {
       throw new Exception('RO untuk tiap detail pelanggan hanya dapat dibuat sehari sekali.');
     }
 
@@ -61,26 +61,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($stmt->affected_rows > 0) {
       $idOrder = $stmt->insert_id;
 
-      $error="";
-      if (!$_FILES['file_po']['size'] == 0) {
-        $target_dir = "../files/po/";
-        $fileType = strtolower(pathinfo($_FILES['file_po']['name'], PATHINFO_EXTENSION));
-        $target_file = str_replace('/', '_', $_POST['kode']) . '.' . $fileType;
-        $uploadOk = 1;
+      $error = "";
+      if (isset($_FILES['file_po'])) {
+        if (!$_FILES['file_po']['size'] == 0) {
+          $target_dir = "../files/po/";
+          $fileType = strtolower(pathinfo($_FILES['file_po']['name'], PATHINFO_EXTENSION));
+          $target_file = str_replace('/', '_', $_POST['kode']) . '.' . $fileType;
+          $uploadOk = 1;
 
-        // Check file size
-        if ($_FILES["file_po"]["size"] > 2000000) {
-          $error = "File lebih dari 2 MB";
-          $uploadOk = 0;
-        }
+          // Check file size
+          if ($_FILES["file_po"]["size"] > 2000000) {
+            $error = "File lebih dari 2 MB";
+            $uploadOk = 0;
+          }
 
-        // Check if $uploadOk is set to 0 by an error
-        if ($uploadOk == 1) {
-          // if everything is ok, try to upload file
-          if (move_uploaded_file($_FILES["file_po"]["tmp_name"], $target_dir . $target_file)) {
-            $sql = "UPDATE request_orders SET file_po = '$target_file' WHERE id = $idOrder";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
+          // Check if $uploadOk is set to 0 by an error
+          if ($uploadOk == 1) {
+            // if everything is ok, try to upload file
+            if (move_uploaded_file($_FILES["file_po"]["tmp_name"], $target_dir . $target_file)) {
+              $sql = "UPDATE request_orders SET file_po = '$target_file' WHERE id = $idOrder";
+              $stmt = $conn->prepare($sql);
+              $stmt->execute();
+            }
           }
         }
       }
@@ -97,11 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
 
       if (isset($data)) {
-        $sql = "INSERT INTO pipeline_marketings (detail_pelanggan_id, marketing_id, tanggal_survey, tanggal_instalasi, status_pelanggan, request_order_id) VALUES (?,?,?,?,'Order',?)";
+        $sql = "INSERT INTO pipeline_marketings (detail_pelanggan_id, marketing_id, tanggal_survey, tanggal_instalasi, status_pelanggan, request_order_id) VALUES (?,?,?,?,'Installed',?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('sssss', $_POST['detail_pelanggan_id'], $_POST['marketing_id'], $data['tanggal_survey'], $data['tanggal_instalasi'], $idOrder);
       } else {
-        $sql = "INSERT INTO pipeline_marketings (detail_pelanggan_id, marketing_id, status_pelanggan, request_order_id) VALUES (?,?,'Order',?)";
+        $sql = "INSERT INTO pipeline_marketings (detail_pelanggan_id, marketing_id, status_pelanggan, request_order_id) VALUES (?,?,'Installed',?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('sss', $_POST['detail_pelanggan_id'], $_POST['marketing_id'], $idOrder);
       }

@@ -25,17 +25,17 @@ include './head.php';
       'type': 'text',
       'required': true,
     },
+    'badan_usaha': {
+      'type': 'radio',
+      'data': badanUsahas,
+      'required': true
+    },
     'nama_perusahaan': {
       'type': 'text',
       'required': true
     },
     'kontak_perusahaan': {
       'type': 'number',
-      'required': true
-    },
-    'badan_usaha': {
-      'type': 'radio',
-      'data': badanUsahas,
       'required': true
     },
     'nama_direktur': {
@@ -46,6 +46,10 @@ include './head.php';
     },
     'nama_pelanggan': {
       'type': 'text',
+      'required': true
+    },
+    'kontak_pelanggan': {
+      'type': 'number',
       'required': true
     },
     'ktp': {
@@ -105,7 +109,7 @@ include './head.php';
           // Initialize datatable
           html = `
           <div class="container-fluid">
-            <table id="datatable" class="table table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
+            <table id="datatable" class="table table-sm table-striped table-bordered table-hover text-nowrap" cellspacing="0" width="100%">
           `;
 
           const data = response.data;
@@ -113,7 +117,7 @@ include './head.php';
 
           // Set table head and foot
           let head = `
-          <thead class="indigo white-text">
+          <thead>
             <tr>
           `;
           let foot = `
@@ -123,8 +127,10 @@ include './head.php';
 
           // Set head, foot
           keys.forEach(key => {
-            head += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
-            foot += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
+            if (key != 'id') {
+              head += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
+              foot += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
+            }
           });
 
           head += `
@@ -144,10 +150,12 @@ include './head.php';
             // Set row data
             let row = `<tr>`;
             keys.forEach(key => {
-              if (datum[key] != null) {
-                row += `<td>${datum[key]}</td>`;
-              } else {
-                row += `<td>-</td>`;
+              if (key != 'id') {
+                if (datum[key] != null) {
+                  row += `<td>${datum[key]}</td>`;
+                } else {
+                  row += `<td>-</td>`;
+                }
               }
             });
             row += `
@@ -185,10 +193,14 @@ include './head.php';
                       .draw();
                   });
               });
+            },
+            scrollX: true,
+            scrollCollapse: true,
+            paging: true,
+            fixedColumns: {
+              left: 2
             }
           });
-          $('.dataTables_length').addClass('bs-select');
-          $('#datatable').parent().addClass('table-responsive');
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);
@@ -216,7 +228,7 @@ include './head.php';
   const addModal = () => {
     // Initialize modal
     let modalAdd = `
-    <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
+    <div class="modal fade" id="modalTambah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalTambahTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <form id="input-form">
@@ -387,7 +399,7 @@ include './head.php';
           formInputs['kota']['data'] = alamats[response.data['provinsi']];
 
           let modalEdit = `
-          <div class="modal fade" id="modalUbah" tabindex="-1" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
+          <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="edit-form">
