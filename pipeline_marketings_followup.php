@@ -67,19 +67,11 @@ include './head.php';
     $.ajax({
       type: 'POST',
       url: './api/pelanggan_get.php',
-      data: {
-
-      },
       success: response => {
         response = JSON.parse(response);
         if (response.success) {
           formInputs['pelanggan_id']['data'] = response.data;
         }
-        let first = true;
-        response.data.forEach(datum => {
-          $('#param-pelanggan').append(`<option value="${datum.id}" ${first?'selected':''}>${datum.badan_usaha} ${datum.nama_perusahaan} - ${datum.kota}</option>}`);
-        });
-        loadPage();
       },
       error: (jqXHR, textStatus, errorThrown) => {
         console.log(textStatus, errorThrown);

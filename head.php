@@ -20,7 +20,7 @@
   <script type="text/javascript" src="js/mdb.min.js"></script>
   <!-- Others -->
   <script src="./js/constants.js"></script>
-  <script src="./js/html2pdf.min.js"></script>
+
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
   <script src="https://cdn.datatables.net/fixedcolumns/4.2.2/js/dataTables.fixedColumns.min.js"></script>

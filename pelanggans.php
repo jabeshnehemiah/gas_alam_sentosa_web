@@ -267,7 +267,7 @@ include './head.php';
         modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <select class="browser-default custom-select modal-select" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
           <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
@@ -321,7 +321,13 @@ include './head.php';
     $('.modal-container').html(modalAdd);
     $('#modalTambah').modal('show');
 
-    $('#ktp-input').keyup(() => {
+    $('.modal-select').select2({
+      theme: 'bootstrap4',
+      width: 'element',
+      placeholder: 'PILIH SALAH SATU'
+    });
+
+    $('#ktp-input').change(() => {
       $('#npwp-input').val($('#ktp-input').val());
     })
 
@@ -329,7 +335,7 @@ include './head.php';
       const selKota = $('#kota-input');
       let provinsi = $('#provinsi-input').find(':selected').val();
       selKota.empty();
-      selKota.append('<option value="" selected hidden>--- PILIH KOTA ---</option>');
+      selKota.append('<option></option>');
       alamats[provinsi].forEach(kota => {
         selKota.append(`<option value="${kota}">${kota}</option>`);
       });
@@ -354,8 +360,6 @@ include './head.php';
       }
       inputs['marketing_id'] = <?php echo $_SESSION['id']; ?>;
 
-      console.log(inputs)
-
       // Get the form data
       const formData = {
         'inputs': inputs
@@ -367,7 +371,6 @@ include './head.php';
         url: './api/pelanggan_add.php',
         data: formData,
         success: response => {
-          console.log(response);
           response = JSON.parse(response);
           $('#modalTambah').modal('hide');
           $(".modal-backdrop").remove();
@@ -438,7 +441,7 @@ include './head.php';
               modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select modal-select" id="${key}-input" ${formInputs[key]['required']?'required':''} >
               `;
               if (Array.isArray(formInputs[key]['data'])) {
                 if (typeof formInputs[key]['data'][0] == 'object') {
@@ -502,16 +505,21 @@ include './head.php';
           $('.modal-container').html(modalEdit);
           $('#modalUbah').modal('show');
 
-          $('#ktp-input').keyup(() => {
+          $('.modal-select').select2({
+            theme: 'bootstrap4',
+            width: 'element',
+            placeholder: 'PILIH SALAH SATU'
+          });
+
+          $('#ktp-input').change(() => {
             $('#npwp-input').val($('#ktp-input').val());
           })
 
           $('#provinsi-input').change(() => {
             const selKota = $('#kota-input');
             let provinsi = $('#provinsi-input').find(':selected').val();
-            console.log(provinsi)
             selKota.empty();
-            selKota.append('<option value="" selected hidden>--- PILIH KOTA ---</option>');
+            selKota.append('<option></option>');
             alamats[provinsi].forEach(kota => {
               selKota.append(`<option value="${kota}">${kota}</option>`);
             });
@@ -532,7 +540,6 @@ include './head.php';
                 inputs[key] = $(`#${key}-input`).val();
               }
             }
-            console.log(inputs)
 
             // Get the form data
             const formData = {

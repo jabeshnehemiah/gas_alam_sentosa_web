@@ -2,11 +2,28 @@
 header("Access-Control-Allow-Origin: *");
 include 'connection.php';
 
-function generateKode($table, $length, $conn, $kategori_barang = null, $satuan = null)
+function generateKode($table, $length, $conn, $kategori_barang = null, $satuan = null, $nama = null)
 {
   $month = date('m');
   $year = date('Y');
   switch ($table) {
+    case 'users':
+      $strings = explode(' ',$nama);
+      $kode='';
+      foreach($strings as $string){
+        $kode.= strtoupper($string[0]);
+      }
+      $sql = "SELECT COUNT(id) id FROM users WHERE kode LIKE '$kode%'";
+      $stmt = $conn->prepare($sql);
+      $stmt->execute();
+      $res = $stmt->get_result();
+
+      $id = 0;
+      while ($row = $res->fetch_assoc()) {
+        // Put data
+        $id = intval($row['id']) + 1;
+      }
+      return $kode . $id;
     case 'barangs':
       $sql = "SELECT COUNT(b.id) id, kb.kode kategori_barang, s.kode satuan FROM barangs b INNER JOIN kategori_barangs kb ON b.kategori_barang_id = kb.id INNER JOIN satuans s ON b.satuan_id = s.id WHERE kb.id = $kategori_barang AND s.id = $satuan";
       $stmt = $conn->prepare($sql);

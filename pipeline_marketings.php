@@ -80,8 +80,8 @@ include './head.php';
 
     $('#param-pelanggan').select2({
       theme: 'bootstrap4',
-      width: 'element',
-      placeholder:'PILIH SALAH SATU'
+      width: 'style',
+      placeholder: 'PILIH SALAH SATU'
     });
 
     $('.alert').alert();
@@ -92,9 +92,6 @@ include './head.php';
     $.ajax({
       type: 'POST',
       url: './api/pelanggan_get.php',
-      data: {
-
-      },
       success: response => {
         response = JSON.parse(response);
         if (response.success) {
@@ -103,6 +100,7 @@ include './head.php';
         let first = true;
         response.data.forEach(datum => {
           $('#param-pelanggan').append(`<option value="${datum.id}" ${first?'selected':''}>${datum.badan_usaha} ${datum.nama_perusahaan} - ${datum.kota}</option>}`);
+          first = false;
         });
         loadPage();
       },
@@ -117,8 +115,8 @@ include './head.php';
     $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
-      data:{
-        'alur':'Jual'
+      data: {
+        'alur': 'Jual'
       },
       success: response => {
         response = JSON.parse(response);
@@ -392,7 +390,7 @@ include './head.php';
     $('.modal-select').select2({
       theme: 'bootstrap4',
       width: 'element',
-      placeholder:'PILIH SALAH SATU'
+      placeholder: 'PILIH SALAH SATU'
     });
 
     $('#pelanggan_id-input').change(() => {
@@ -458,7 +456,7 @@ include './head.php';
                 $('.modal-select').select2({
                   theme: 'bootstrap4',
                   width: 'element',
-                  placeholder:'PILIH SALAH SATU'
+                  placeholder: 'PILIH SALAH SATU'
                 });
               })
             } else if (key == 'status_pelanggan') {
@@ -546,7 +544,7 @@ include './head.php';
     $('.modal-select').select2({
       theme: 'bootstrap4',
       width: 'element',
-      placeholder:'PILIH SALAH SATU'
+      placeholder: 'PILIH SALAH SATU'
     });
 
     counter++;
@@ -734,7 +732,7 @@ include './head.php';
               $('.modal-select').select2({
                 theme: 'bootstrap4',
                 width: 'element',
-                placeholder:'PILIH SALAH SATU'
+                placeholder: 'PILIH SALAH SATU'
               });
 
               const selDetail = $('#detail_pelanggan_id-input');
