@@ -43,22 +43,18 @@ if (isset($_GET['kode'])) {
       },
       'nama_purchasing': {
         'type': 'text',
-        'required': true
       },
       'kontak_purchasing': {
         'type': 'number',
-        'required': true
       },
       'email_purchasing': {
         'type': 'email',
       },
       'nama_finance': {
         'type': 'text',
-        'required': true
       },
       'kontak_finance': {
         'type': 'number',
-        'required': true
       },
       'email_finance': {
         'type': 'email',
@@ -68,6 +64,10 @@ if (isset($_GET['kode'])) {
       },
       'top': {
         'type': 'number',
+        'required':true
+      },
+      'keterangan_top': {
+        'type': 'text',
       },
     };
     let pelanggan_id;

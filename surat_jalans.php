@@ -394,12 +394,12 @@ include './head.php';
         <div class="mb-4">
           <label>daftar barang</label><button class="btn btn-primary px-2 py-1" onClick="tambahBarang(event)"><i class="fas fa-plus"></i></button>
           <div class="table-responsive">
-            <table class="table table-bordered table-sm">
+            <table class="table table-bordered table-sm text-nowrap">
               <thead>
                 <tr>
-                  <th>Barang</th>
-                  <th>Harga Beli</th>
-                  <th>Harga Jual</th>
+                  <th class="th-lg">Barang</th>
+                  <th class="th-lg">Harga Beli</th>
+                  <th class="th-lg">Harga Jual</th>
                   <th>Kuantitas</th>
                   <th>PPN</th>
                   <th></th>
@@ -487,12 +487,13 @@ include './head.php';
           console.log(response);
           response = JSON.parse(response);
 
-          if (!response.data['request_order_id']) {
 
-            for (const key in formInputs) {
-              if (key == 'detail_surat_jalans') {
-                $('#tbBarang').html('');
-                response.barangs.forEach(barang => {
+
+          for (const key in formInputs) {
+            if (key == 'detail_surat_jalans') {
+              $('#tbBarang').html('');
+              response.barangs.forEach(barang => {
+                if (barang.kuantitas > 0) {
                   let table = `
                     <tr id="row${counter}">
                       <td>
@@ -526,11 +527,12 @@ include './head.php';
                     width: 'element',
                     placeholder: 'PILIH SALAH SATU'
                   });
-                })
-              } else if (formInputs[key]['type'] != 'select') {
-                $(`#${key}-input`).val(response.data[key]);
-              }
+                }
+              });
+            } else if (formInputs[key]['type'] != 'select') {
+              $(`#${key}-input`).val(response.data[key]);
             }
+
           }
         },
         error: (jqXHR, textStatus, errorThrown) => {
@@ -696,9 +698,9 @@ include './head.php';
                       <table class="table table-bordered table-sm">
                         <thead>
                           <tr>
-                            <th>Barang</th>
-                            <th>Harga Beli</th>
-                            <th>Harga Jual</th>
+                            <th class="th-lg">Barang</th>
+                            <th class="th-lg">Harga Beli</th>
+                            <th class="th-lg">Harga Jual</th>
                             <th>Kuantitas</th>
                             <th>PPN</th>
                             <th></th>

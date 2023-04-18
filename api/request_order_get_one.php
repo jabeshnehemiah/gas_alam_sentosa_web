@@ -21,11 +21,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $res = $stmt->get_result();
   } else if (isset($_POST['id'])) {
     $sql =
-      "SELECT ro.id, ro.detail_pelanggan_id, ro.diskon, ro.biaya_tambahan, ro.tanggal_kirim, dro.barang_id, dro.kuantitas, dro.harga_jual, dro.ppn, b.harga_beli 
+      "SELECT ro.id, ro.detail_pelanggan_id, ro.diskon, ro.biaya_tambahan, ro.tanggal_kirim, dro.barang_id, (dro.kuantitas - COALESCE(t.kuantitas, 0)) kuantitas, b.harga_beli, dro.harga_jual, dro.ppn, dro.subtotal, b.nama barang, s.nama satuan 
       FROM request_orders ro 
-      LEFT JOIN detail_request_orders dro ON ro.id = dro.request_order_id
-      LEFT JOIN barangs b ON dro.barang_id = b.id  
-      WHERE ro.id = ?";
+      INNER JOIN detail_request_orders dro ON ro.id = dro.request_order_id 
+      INNER JOIN barangs b ON dro.barang_id = b.id 
+      INNER JOIN satuans s ON b.satuan_id = s.id 
+      LEFT JOIN (
+        SELECT dsj.barang_id, SUM(dsj.kuantitas) kuantitas 
+        FROM surat_jalans sj 
+        INNER JOIN detail_surat_jalans dsj ON sj.id = dsj.surat_jalan_id 
+        WHERE sj.request_order_id = 2 
+        GROUP BY dsj.barang_id
+      ) t ON dro.barang_id = t.barang_id
+      WHERE ro.id = ?;";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('s', $_POST['id']);

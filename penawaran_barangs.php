@@ -385,9 +385,9 @@ include './head.php';
               <thead>
                 <tr>
                   <th>Barang</th>
-                  <th>Harga Beli</th>
-                  <th>Harga Jual</th>
-                  <th>Kuantitas</th>
+                  <th class="th-lg">Harga Beli</th>
+                  <th class="th-lg">Harga Jual</th>
+                  <th class="th-lg">Kuantitas</th>
                   <th>PPN</th>
                   <th></th>
                 </tr>
@@ -680,9 +680,9 @@ include './head.php';
                         <thead>
                           <tr>
                             <th>Barang</th>
-                            <th>Harga Beli</th>
-                            <th>Harga Jual</th>
-                            <th>Kuantitas</th>
+                            <th class="th-lg">Harga Beli</th>
+                            <th class="th-lg">Harga Jual</th>
+                            <th class="th-lg">Kuantitas</th>
                             <th>PPN</th>
                             <th></th>
                           </tr>

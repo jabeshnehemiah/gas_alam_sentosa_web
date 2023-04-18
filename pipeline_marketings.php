@@ -318,7 +318,7 @@ include './head.php';
             <table class="table table-bordered table-sm">
               <thead>
                 <tr>
-                  <th>Barang</th>
+                  <th class="th-lg">Barang</th>
                   <th>Kuantitas</th>
                   <th></th>
                 </tr>
@@ -627,7 +627,7 @@ include './head.php';
                       <table class="table table-bordered table-sm">
                         <thead>
                           <tr>
-                            <th>Barang</th>
+                            <th class="th-lg">Barang</th>
                             <th>Kuantitas</th>
                             <th></th>
                           </tr>

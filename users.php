@@ -40,6 +40,7 @@
     'atasan_id': {
       'type': 'select',
       'data': [],
+      'required': true,
       'disabled': true,
     },
   };
@@ -129,7 +130,7 @@
 
           // Set head, foot
           keys.forEach(key => {
-            if (key != 'aktif' && key!='id') {
+            if (key != 'aktif' && key != 'id') {
               head += `<th>${key.toUpperCase()}</th>`;
               foot += `<th>${key.toUpperCase()}</th>`;
             }
@@ -152,7 +153,7 @@
             // Set row data
             let row = `<tr>`;
             keys.forEach(key => {
-              if (key != 'aktif' && key!='id') {
+              if (key != 'aktif' && key != 'id') {
                 if (datum[key] != null) {
                   row += `<td>${datum[key]}</td>`;
                 } else {
@@ -399,7 +400,7 @@
     });
   }
 
-  const editModal = (kode, nama) => {
+  const editModal = (kode) => {
     // Send the AJAX request
     $.ajax({
       type: 'POST',
@@ -409,77 +410,79 @@
       },
       success: response => {
         response = JSON.parse(response);
-        if (response.success) {
-          let modalEdit = `
+
+        $.ajax({
+          type: 'POST',
+          url: './api/user_get.php',
+          data: {
+            'role': response.data['role_id'],
+            'divisi': response.data['divisi_id'],
+          },
+          success: response1 => {
+            response1 = JSON.parse(response1);
+            if (response.success) {
+              formInputs['atasan_id']['data'] = response1.data;
+              let modalEdit = `
           <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
               <div class="modal-content">
                 <form id="edit-form">
                   <div class="modal-header">
-                    <h5 class="modal-title">Edit Data ${nama}</h5>
+                    <h5 class="modal-title">Ubah ${kode}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
                   </div>
                   <div class="modal-body">
           `;
-          fillables.forEach(fillable => {
-            modalEdit += `
-            <div class="mb-4">
-              <label for="${fillable}-input">${fillable}</label>
-              <input type="text" id="${fillable}-input" name="${fillable}" class="form-control validate" value="${response.data[fillable]}" required>
-            </div>
-            `;
-          });
-          selects.forEach(table => {
-            if (table == 'users') {
-              table = 'atasans';
-            }
-            modalEdit += `
-            <div class="mb-4">
-              <label for="${table}-input">${table.slice(0,-1)}</label>
-              <select class="browser-default custom-select" id="${table}-input"
-            `;
-            if (table == 'roles') {
-              modalEdit += ' required>';
-            } else {
-              modalEdit += '>';
-            }
 
-            if (table == 'atasans') {
-              table = 'users';
-            }
-
-            selectValues[table].forEach(value => {
-              if (table != 'users' || value.nama != nama) {
-                if (response.data[table.slice(0, -1)] == value.nama) {
-                  modalEdit += `<option value="${value.id}" selected>${value.nama}</option>`;
-                } else {
-                  modalEdit += `<option value="${value.id}">${value.nama}</option>`;
+              for (const key in formInputs) {
+                if (formInputs[key]['type'] == 'text') {
+                  modalEdit += `
+              <div class="mb-4">
+                <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+                <input type="text" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}" ${formInputs[key]['maxlength']?'maxlength='+formInputs[key]['maxlength']:''} ${formInputs[key]['minlength']?'minlength='+formInputs[key]['minlength']:''}>
+              </div>
+              `;
+                } else if (formInputs[key]['type'] == 'select') {
+                  modalEdit += `
+              <div class="mb-4">
+                <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
+                <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                  <option></option>
+              `;
+                  if (Array.isArray(formInputs[key]['data'])) {
+                    if (typeof formInputs[key]['data'][0] == 'object') {
+                      console.log(response.data[key])
+                      formInputs[key]['data'].forEach(datum => {
+                        if (response.data[key] == datum.id) {
+                          modalEdit += `<option value="${datum.id}" selected>${datum.nama}</option>`;
+                        } else {
+                          modalEdit += `<option value="${datum.id}">${datum.nama}</option>`;
+                        }
+                      });
+                    } else {
+                      formInputs[key]['data'].forEach(datum => {
+                        modalEdit += `<option value="${datum}" ${response.data[key]==datum? 'selected':''}>${datum}</option>`;
+                        if (!formInputs[key]['required']) {
+                          if (response.data[key]) {
+                            modalEdit += `<option value="" selected>Tidak ada</option>`;
+                          } else {
+                            modalEdit += `<option value="">Tidak ada</option>`;
+                          }
+                        }
+                      });
+                    }
+                  }
+                  modalEdit += `
+                </select>
+              </div>
+              `;
                 }
               }
-            });
 
-            if (table == 'users') {
-              table = 'atasans';
-            }
-
-            if (table != 'roles') {
-              if (response.data[table.slice(0, -1)] == null) {
-                modalEdit += `<option value="" selected>Tidak ada</option>`;
-              } else {
-                modalEdit += `<option value="">Tidak ada</option>`;
-
-              }
-            }
-
-            modalEdit += `
-              </select>
-            </div>
-            `;
-          });
-
-          modalEdit += `
+              // Append modal
+              modalEdit += `
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
@@ -490,59 +493,83 @@
             </div>
           </div>
           `;
-          $('.modal-container').html(modalEdit);
-          response.fillables.forEach(key => {
-            $(`#${key}-edit`).trigger('change');
-          });
-          $('#modalUbah').modal('show');
 
-          $('#edit-form').submit(event => {
-            event.preventDefault();
+              $('.modal-container').html(modalEdit);
+              $('#modalUbah').modal('show');
 
-            // Get inputs
-            let inputs = {};
-            fillables.forEach(key => {
-              inputs[key] = $(`#${key}-input`).val();
-            });
-            selects.forEach(key => {
-              if (key == 'users') {
-                key = 'atasans';
-              }
-              if (!$(`#${key}-input`).val() == "") {
-                inputs[key.slice(0, -1).concat('_id')] = $(`#${key}-input`).val();
-              } else {
-                inputs[key.slice(0, -1).concat('_id')] = null;
-              }
-            });
+              $('.modal-select').select2({
+                theme: 'bootstrap4',
+                width: 'element',
+                placeholder: 'PILIH SALAH SATU'
+              });
 
-            // Get the form data
-            const formData = {
-              'kode': kode,
-              'inputs': inputs
-            };
+              $('#role_id-input, #divisi_id-input').change(() => {
+                const role = $('#role_id-input option:selected').val();
+                const divisi = $('#divisi_id-input option:selected').val();
+                if (role != '' && divisi != '') {
+                  $.ajax({
+                    type: 'POST',
+                    url: './api/user_get.php',
+                    data: {
+                      'role': role,
+                      'divisi': divisi
+                    },
+                    success: response => {
+                      response = JSON.parse(response);
 
-            // Send the AJAX request
-            $.ajax({
-              type: 'POST',
-              url: './api/user_edit.php',
-              data: formData,
-              success: response => {
-                response = JSON.parse(response);
-                $('#modalUbah').modal('hide');
-                $(".modal-backdrop").remove();
-                if (response.success) {
-                  showAlert('success', response.message);
-                } else {
-                  showAlert('danger', response.message);
+                      $('#atasan_id-input').empty();
+                      $('#atasan_id-input').append(`<option></option>`);
+
+                      response.data.forEach(datum => {
+                        $('#atasan_id-input').append(`<option value="${datum.id}">${datum.nama} - ${datum.role}</option>`);
+                      })
+                    },
+                    error: (jqXHR, textStatus, errorThrown) => {
+                      console.log(textStatus, errorThrown);
+                    }
+                  });
                 }
-                loadPage();
-              },
-              error: (jqXHR, textStatus, errorThrown) => {
-                console.log(textStatus, errorThrown);
-              }
-            });
-          })
-        }
+              });
+
+              $('#edit-form').submit(event => {
+                event.preventDefault();
+
+                // Get the form data
+                const form = document.getElementById('edit-form')
+                const formData = new FormData(form);
+                formData.append('id', response.data.id);
+
+                // Send the AJAX request
+                $.ajax({
+                  type: 'POST',
+                  url: './api/user_edit.php',
+                  data: formData,
+                  contentType: false,
+                  processData: false,
+                  success: response => {
+                    console.log(response)
+                    response = JSON.parse(response);
+                    $('#modalUbah').modal('hide');
+                    $(".modal-backdrop").remove();
+                    if (response.success) {
+                      showAlert('success', response.message);
+                    } else {
+                      showAlert('danger', response.message);
+                    }
+                    loadPage();
+                  },
+                  error: (jqXHR, textStatus, errorThrown) => {
+                    console.log(textStatus, errorThrown);
+                  }
+                });
+              })
+
+            }
+          },
+          error: (jqXHR, textStatus, errorThrown) => {
+            console.log(textStatus, errorThrown);
+          }
+        })
       },
       error: (jqXHR, textStatus, errorThrown) => {
         console.log(textStatus, errorThrown);
@@ -550,7 +577,7 @@
     });
   }
 
-  let counter=0;
+  let counter = 0;
 
   const deleteModal = (kode) => {
     // Send the AJAX request
@@ -601,7 +628,7 @@
                           <option></option>
                     `;
             users.forEach(user => {
-              if(user.kode!=kode){
+              if (user.kode != kode) {
                 table += `<option value="${user.id}">${user.nama}</option>`;
               }
             })
