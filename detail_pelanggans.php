@@ -38,6 +38,10 @@ if (isset($_GET['kode'])) {
         'type': 'text',
         'required': true
       },
+      'harga_barangs': {
+        'type': 'harga_barangs',
+        'data': []
+      },
       'kode_pos': {
         'type': 'number',
       },
@@ -59,12 +63,9 @@ if (isset($_GET['kode'])) {
       'email_finance': {
         'type': 'email',
       },
-      'harga_jual': {
-        'type': 'number',
-      },
       'top': {
         'type': 'number',
-        'required':true
+        'required': true
       },
       'keterangan_top': {
         'type': 'text',
@@ -73,10 +74,32 @@ if (isset($_GET['kode'])) {
     let pelanggan_id;
 
     $(document).ready(function() {
+      loadBarangs();
+
       loadPage();
 
       $('.alert').alert();
     });
+
+    const loadBarangs = () => {
+      // Send the AJAX request
+      $.ajax({
+        type: 'POST',
+        url: './api/barang_get.php',
+        data: {
+          'alur': 'Jual'
+        },
+        success: response => {
+          response = JSON.parse(response);
+          if (response.success) {
+            formInputs['harga_barangs']['data'] = response.data;
+          }
+        },
+        error: (jqXHR, textStatus, errorThrown) => {
+          console.log(textStatus, errorThrown);
+        }
+      });
+    }
 
     // Function to load page
     const loadPage = () => {
@@ -256,6 +279,25 @@ if (isset($_GET['kode'])) {
           <input type="email" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
         </div>
         `;
+        } else if (formInputs[key]['type'] == 'harga_barangs') {
+          modalAdd += `
+        <div class="mb-4">
+          <label>daftar barang</label><button class="btn btn-primary px-2 py-1" onClick="tambahBarang(event)"><i class="fas fa-plus"></i></button>
+          <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th>Barang</th>
+                  <th class="th-lg">Harga Jual</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tbBarang">
+              </tbody>
+            </table>
+          </div>
+        </div>
+        `;
         } else if (formInputs[key]['type'] == 'select') {
           modalAdd += `
         <div class="mb-4">
@@ -335,31 +377,29 @@ if (isset($_GET['kode'])) {
       $('#input-form').submit((event) => {
         event.preventDefault();
 
-        // Get inputs
-        let inputs = {};
-        for (const key in formInputs) {
-          if (key == 'kode') {
-            inputs[key] = $(`#${key}-input`).val().toUpperCase();
-          } else if (formInputs[key]['type'] == 'radio') {
-            inputs[key] = $(`input[name=${key}]:checked`).attr('id');
-          } else {
-            inputs[key] = $(`#${key}-input`).val();
-          }
-        }
-        inputs['pelanggan_id'] = pelanggan_id;
-
-        console.log(inputs)
-
         // Get the form data
-        const formData = {
-          'inputs': inputs
-        };
+        const form = document.getElementById('input-form');
+        const formData = new FormData(form);
+        formData.append('pelanggan_id', pelanggan_id);
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            if (!input.checked) {
+              formData.set(input.name, '');
+            }
+          } else if (input.value === '') {
+            formData.set(input.name, '');
+          }
+        });
+
 
         // Send the AJAX request
         $.ajax({
           type: 'POST',
           url: './api/detail_pelanggan_add.php',
           data: formData,
+          contentType: false,
+          processData: false,
           success: response => {
             console.log(response);
             response = JSON.parse(response);
@@ -377,6 +417,41 @@ if (isset($_GET['kode'])) {
           }
         });
       });
+    }
+
+    let counter = 0;
+    const tambahBarang = (e) => {
+      e.preventDefault();
+      let table = `
+      <tr id="row${counter}">
+        <td>
+          <select class="browser-default custom-select modal-select" name="harga_barangs[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})"er}" onChange="showHarga(${counter})" required>
+            <option></option>
+      `;
+      formInputs['harga_barangs']['data'].forEach(datum => {
+        table += `<option value="${datum.id}">${datum.nama}</option>`;
+      })
+      table += `
+          </select>
+        </td>
+        <td><input type="number" name="harga_barangs[${counter}][harga_jual]" class="form-control validate" required></td>
+        <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+      </tr>
+      `;
+      $('#tbBarang').append(table);
+
+      $('.modal-select').select2({
+        theme: 'bootstrap4',
+        width: 'element',
+        placeholder: 'PILIH SALAH SATU'
+      });
+
+      counter++;
+    }
+
+    const hapusBarang = (e, id) => {
+      e.preventDefault()
+      $(`#${id}`).remove()
     }
 
     const editModal = (id) => {

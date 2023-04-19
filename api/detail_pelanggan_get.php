@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $res = $stmt->get_result();
 
   $data = [];
+  $id=0;
   while ($row = $res->fetch_assoc()) {
     // Put data into array
     $data[] = $row;

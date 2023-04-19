@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 15, 2023 at 08:02 AM
+-- Generation Time: Apr 19, 2023 at 11:01 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -90,7 +90,8 @@ CREATE TABLE `detail_pelanggans` (
 
 INSERT INTO `detail_pelanggans` (`id`, `alamat`, `kota`, `provinsi`, `kode_pos`, `nama_purchasing`, `kontak_purchasing`, `email_purchasing`, `nama_finance`, `kontak_finance`, `email_finance`, `harga_jual`, `top`, `keterangan_top`, `pelanggan_id`) VALUES
 (6, 'Jl. Dummy Detail No.12345', 'Tabanan', 'Bali', '', 'purchasing', '12345', '', 'finance', '12345', '', 100000, 2, NULL, 7),
-(7, 'Jl. Blabla', 'Surabaya', 'Jawa Timur', '12345', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5, 'setelah order', 7);
+(7, 'Jl. Blabla', 'Surabaya', 'Jawa Timur', '12345', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5, 'setelah order', 7),
+(8, 'ijrgaijg', 'Jembrana', 'Bali', '1234', '', '', '', '', '', '', 0, 11, '', 7);
 
 -- --------------------------------------------------------
 
@@ -149,6 +150,7 @@ INSERT INTO `detail_pipeline_marketings` (`barang_id`, `pipeline_marketing_id`, 
 CREATE TABLE `detail_request_orders` (
   `barang_id` int(11) NOT NULL,
   `request_order_id` int(11) NOT NULL,
+  `harga_beli` double DEFAULT NULL,
   `kuantitas` double DEFAULT NULL,
   `harga_jual` double DEFAULT NULL,
   `ppn` double DEFAULT NULL,
@@ -159,14 +161,14 @@ CREATE TABLE `detail_request_orders` (
 -- Dumping data for table `detail_request_orders`
 --
 
-INSERT INTO `detail_request_orders` (`barang_id`, `request_order_id`, `kuantitas`, `harga_jual`, `ppn`, `subtotal`) VALUES
-(4, 2, 3, 12000, 11, 39960),
-(4, 11, 2, 13000, 11, 28860),
-(4, 20, 2, 1200, 11, 2664),
-(5, 23, 5, 135732, 11, 753313),
-(5, 24, 3, 15000, 11, 49950),
-(11, 24, 2, 1400000, 0, 3108000),
-(13, 24, 5, 10000, 11, 55500);
+INSERT INTO `detail_request_orders` (`barang_id`, `request_order_id`, `harga_beli`, `kuantitas`, `harga_jual`, `ppn`, `subtotal`) VALUES
+(4, 2, NULL, 3, 12000, 11, 39960),
+(4, 11, NULL, 2, 13000, 11, 28860),
+(4, 20, NULL, 2, 1200, 11, 2664),
+(5, 23, NULL, 5, 135732, 11, 753313),
+(5, 24, NULL, 3, 15000, 11, 49950),
+(11, 24, NULL, 2, 1400000, 0, 3108000),
+(13, 24, NULL, 5, 10000, 11, 55500);
 
 -- --------------------------------------------------------
 
@@ -189,7 +191,7 @@ CREATE TABLE `detail_surat_jalans` (
 
 INSERT INTO `detail_surat_jalans` (`barang_id`, `surat_jalan_id`, `kuantitas`, `harga_jual`, `ppn`, `subtotal`) VALUES
 (4, 9, 3, 12000, 11, 39960),
-(5, 8, 3, 40000, 11, 133200);
+(5, 8, 5, 40000, 11, 222000);
 
 -- --------------------------------------------------------
 
@@ -209,6 +211,26 @@ CREATE TABLE `divisis` (
 INSERT INTO `divisis` (`id`, `nama`) VALUES
 (1, 'Marketing'),
 (3, 'Finance');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `harga_barangs`
+--
+
+CREATE TABLE `harga_barangs` (
+  `barang_id` int(11) NOT NULL,
+  `detail_pelanggan_id` int(11) NOT NULL,
+  `harga_jual` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `harga_barangs`
+--
+
+INSERT INTO `harga_barangs` (`barang_id`, `detail_pelanggan_id`, `harga_jual`) VALUES
+(5, 6, 15000),
+(8, 6, 20000);
 
 -- --------------------------------------------------------
 
@@ -263,8 +285,10 @@ CREATE TABLE `pelanggans` (
 --
 
 INSERT INTO `pelanggans` (`id`, `kode`, `badan_usaha`, `nama_perusahaan`, `kontak_perusahaan`, `alamat`, `kota`, `provinsi`, `kode_pos`, `nama_direktur`, `kontak_direktur`, `nama_pelanggan`, `kontak_pelanggan`, `ktp`, `npwp`, `status_piutang`, `marketing_id`) VALUES
-(7, 'DUM', 'PT', 'Dummy', '10231920', 'Jl. Dummy Umum', 'Paser', 'Kalimantan Timur', '1231', 'direktur', '0123919', 'pelanggan', NULL, '12931010', '12931010', 'Lancar', 1),
-(8, 'DUM2', 'CV', 'Halo', '12309488', NULL, 'Denpasar', 'Bali', '2939', NULL, NULL, NULL, NULL, NULL, NULL, 'Lancar', 1);
+(7, 'DUM1', 'PT', 'Dummy', '10231920', 'Jl. Dummy Umum', 'Paser', 'Kalimantan Timur', '1231', 'direktur', '0123919', 'pelanggan', NULL, '12931010', '12931010', 'Lancar', 1),
+(8, 'DUM2', 'CV', 'Halo', '12309488', NULL, 'Denpasar', 'Bali', '2939', NULL, NULL, NULL, NULL, NULL, NULL, 'Lancar', 1),
+(9, 'DUM3', 'Perum', 'Dana Untuk Masyarakat', '123456', 'arjpaojrg', 'Lebak', 'Banten', '', '', '', 'absc', '21345', '', '', 'Lancar', 1),
+(10, 'B1', 'UD', 'Blabal', '1234556', 'ABr e23', 'Lebak', 'Banten', '', '', '', 'Nabsi', '13094', '', '', 'Lancar', 1);
 
 -- --------------------------------------------------------
 
@@ -462,7 +486,7 @@ CREATE TABLE `surat_jalans` (
 INSERT INTO `surat_jalans` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal_kirim`, `nama_driver`, `tanggal_dibuat`, `request_order_id`, `marketing_id`) VALUES
 (2, 'SJ/IT/2023/04/0001', NULL, NULL, '2023-04-11', 'Driver Dumm', '2023-04-10', 3, 1),
 (7, 'SJ/IT/2023/04/0002', NULL, NULL, '2023-04-27', '', '2023-04-10', 6, 1),
-(8, 'SJ/2023/04/0003', 0, 0, '2023-04-06', 'hai', '2023-04-13', 2, 1),
+(8, 'SJ/2023/04/0003', 42000, 0, '2023-04-06', 'hai', '2023-04-13', 2, 1),
 (9, 'SJ/2023/04/0004', NULL, NULL, '2023-04-05', '', '2023-04-13', 2, 1),
 (10, 'SJ/2023/04/0005', NULL, NULL, '2023-04-05', '', '2023-04-13', 2, 1);
 
@@ -552,6 +576,14 @@ ALTER TABLE `detail_surat_jalans`
 --
 ALTER TABLE `divisis`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `harga_barangs`
+--
+ALTER TABLE `harga_barangs`
+  ADD PRIMARY KEY (`barang_id`,`detail_pelanggan_id`),
+  ADD KEY `fk_barangs_has_detail_pelanggans_detail_pelanggans1_idx` (`detail_pelanggan_id`),
+  ADD KEY `fk_barangs_has_detail_pelanggans_barangs1_idx` (`barang_id`);
 
 --
 -- Indexes for table `kategori_barangs`
@@ -649,7 +681,7 @@ ALTER TABLE `barangs`
 -- AUTO_INCREMENT for table `detail_pelanggans`
 --
 ALTER TABLE `detail_pelanggans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `divisis`
@@ -667,7 +699,7 @@ ALTER TABLE `kategori_barangs`
 -- AUTO_INCREMENT for table `pelanggans`
 --
 ALTER TABLE `pelanggans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `penawaran_barangs`
@@ -761,6 +793,13 @@ ALTER TABLE `detail_request_orders`
 ALTER TABLE `detail_surat_jalans`
   ADD CONSTRAINT `fk_barangs_has_surat_jalans_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_barangs_has_surat_jalans_surat_jalans1` FOREIGN KEY (`surat_jalan_id`) REFERENCES `surat_jalans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `harga_barangs`
+--
+ALTER TABLE `harga_barangs`
+  ADD CONSTRAINT `fk_barangs_has_detail_pelanggans_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_barangs_has_detail_pelanggans_detail_pelanggans1` FOREIGN KEY (`detail_pelanggan_id`) REFERENCES `detail_pelanggans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `pelanggans`

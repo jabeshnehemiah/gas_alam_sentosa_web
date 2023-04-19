@@ -59,6 +59,8 @@ include './head.php';
     loadPelanggans();
     loadBarangs();
 
+    loadPage();
+
     $('.alert').alert();
   });
 

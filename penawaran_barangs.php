@@ -868,7 +868,6 @@ include './head.php';
                 const form = document.getElementById('edit-form');
                 const formData = new FormData(form);
                 formData.delete('pelanggan_id');
-                formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
                 formData.append('id', response.data.id);
                 const inputs = form.querySelectorAll('input, textarea, select');
                 inputs.forEach(input => {

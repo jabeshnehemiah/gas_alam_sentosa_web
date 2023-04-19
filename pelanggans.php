@@ -21,10 +21,6 @@ include './head.php';
 </body>
 <script type="text/javascript">
   let formInputs = {
-    'kode': {
-      'type': 'text',
-      'required': true,
-    },
     'badan_usaha': {
       'type': 'radio',
       'data': badanUsahas,
@@ -267,7 +263,7 @@ include './head.php';
         modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select modal-select" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
           <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
         `;
         if (Array.isArray(formInputs[key]['data'])) {
@@ -295,7 +291,7 @@ include './head.php';
           formInputs[key]['data'].forEach(datum => {
             modalAdd += `
             <div class="custom-control custom-radio custom-control-inline">
-              <input type="radio" class="custom-control-input" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+              <input type="radio" class="custom-control-input" value="${datum}" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
               <label class="custom-control-label" for="${datum}">${datum}</label>
             </div>
             `;
@@ -347,30 +343,33 @@ include './head.php';
     $('#input-form').submit((event) => {
       event.preventDefault();
 
-      // Get inputs
-      let inputs = {};
-      for (const key in formInputs) {
-        if (key == 'kode') {
-          inputs[key] = $(`#${key}-input`).val().toUpperCase();
-        } else if (formInputs[key]['type'] == 'radio') {
-          inputs[key] = $(`input[name=${key}]:checked`).attr('id');
-        } else {
-          inputs[key] = $(`#${key}-input`).val();
-        }
-      }
-      inputs['marketing_id'] = <?php echo $_SESSION['id']; ?>;
-
       // Get the form data
-      const formData = {
-        'inputs': inputs
-      };
+      const form = document.getElementById('input-form');
+      const formData = new FormData(form);
+      formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
+      const inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          if (!input.checked) {
+            formData.set(input.name, '');
+          }
+        } else if (input.value === '') {
+          formData.set(input.name, '');
+        }
+      });
+      formData.set('badan_usaha', document.querySelector('input[name="badan_usaha"]:checked').value);
+      formData.set('status_piutang', document.querySelector('input[name="status_piutang"]:checked').value);
+
 
       // Send the AJAX request
       $.ajax({
         type: 'POST',
         url: './api/pelanggan_add.php',
         data: formData,
+        contentType: false,
+        processData: false,
         success: response => {
+          console.log(response)
           response = JSON.parse(response);
           $('#modalTambah').modal('hide');
           $(".modal-backdrop").remove();
@@ -441,7 +440,7 @@ include './head.php';
               modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select modal-select" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select modal-select" name="${key}" id="${key}-input" ${formInputs[key]['required']?'required':''} >
               `;
               if (Array.isArray(formInputs[key]['data'])) {
                 if (typeof formInputs[key]['data'][0] == 'object') {
@@ -479,7 +478,7 @@ include './head.php';
                 formInputs[key]['data'].forEach(datum => {
                   modalEdit += `
                   <div class="custom-control custom-radio custom-control-inline">
-                    <input type="radio" class="custom-control-input" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''}  ${response.data[key]==datum?'checked':''}>
+                    <input type="radio" class="custom-control-input" value="${datum}" id="${datum}" name="${key}" ${formInputs[key]['required']?'required':''}  ${response.data[key]==datum?'checked':''}>
                     <label class="custom-control-label" for="${datum}">${datum}</label>
                   </div>
                   `;
@@ -529,29 +528,31 @@ include './head.php';
           $('#edit-form').submit(event => {
             event.preventDefault();
 
-            // Get inputs
-            let inputs = {};
-            for (const key in formInputs) {
-              if (key == 'kode') {
-                inputs[key] = $(`#${key}-input`).val().toUpperCase();
-              } else if (formInputs[key]['type'] == 'radio') {
-                inputs[key] = $(`input[name=${key}]:checked`).attr('id');
-              } else {
-                inputs[key] = $(`#${key}-input`).val();
-              }
-            }
-
             // Get the form data
-            const formData = {
-              'kode': kode,
-              'inputs': inputs
-            };
+            const form = document.getElementById('edit-form');
+            const formData = new FormData(form);
+            formData.delete('pelanggan_id');
+            formData.append('id', response.data.id);
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+              if (input.type === 'checkbox' || input.type === 'radio') {
+                if (!input.checked) {
+                  formData.set(input.name, '');
+                }
+              } else if (input.value === '') {
+                formData.set(input.name, '');
+              }
+            });
+            formData.set('badan_usaha', document.querySelector('input[name="badan_usaha"]:checked').value);
+            formData.set('status_piutang', document.querySelector('input[name="status_piutang"]:checked').value);
 
             // Send the AJAX request
             $.ajax({
               type: 'POST',
               url: './api/pelanggan_edit.php',
               data: formData,
+              contentType: false,
+              processData: false,
               success: response => {
                 console.log(response)
                 response = JSON.parse(response);
