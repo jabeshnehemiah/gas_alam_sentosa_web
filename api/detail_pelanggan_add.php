@@ -7,8 +7,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   try {
     $conn->begin_transaction();
 
-    echo var_dump($_POST);
-
     if (isset($_POST['harga_barangs'])) {
       $details = $_POST['harga_barangs'];
       unset($_POST['harga_barangs']);
@@ -54,8 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {
-      if (isset($details)) {
+      $id = $stmt->insert_id;
 
+      if (isset($details)) {
         foreach ($details as $detail) {
           $detail['detail_pelanggan_id'] = $id;
           // Get keys

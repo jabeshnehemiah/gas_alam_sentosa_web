@@ -38,12 +38,12 @@ if (isset($_GET['kode'])) {
         'type': 'text',
         'required': true
       },
+      'kode_pos': {
+        'type': 'number',
+      },
       'harga_barangs': {
         'type': 'harga_barangs',
         'data': []
-      },
-      'kode_pos': {
-        'type': 'number',
       },
       'nama_purchasing': {
         'type': 'text',
@@ -302,8 +302,8 @@ if (isset($_GET['kode'])) {
           modalAdd += `
         <div class="mb-4">
           <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-          <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
-          <option value="" selected hidden>--- PILIH ${key.replace(/_/g,' ').toUpperCase()} ---</option>
+          <select class="browser-default custom-select modal-select" id="${key}-input" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <option value=""></option>
         `;
           if (Array.isArray(formInputs[key]['data'])) {
             if (typeof formInputs[key]['data'][0] == 'object') {
@@ -356,9 +356,11 @@ if (isset($_GET['kode'])) {
       $('.modal-container').html(modalAdd);
       $('#modalTambah').modal('show');
 
-      $('#ktp-input').keyup(() => {
-        $('#npwp-input').val($('#ktp-input').val());
-      })
+      $('.modal-select').select2({
+        theme: 'bootstrap4',
+        width: 'element',
+        placeholder: 'PILIH SALAH SATU'
+      });
 
       $('#provinsi-input').change(() => {
         const selKota = $('#kota-input');
@@ -425,7 +427,7 @@ if (isset($_GET['kode'])) {
       let table = `
       <tr id="row${counter}">
         <td>
-          <select class="browser-default custom-select modal-select" name="harga_barangs[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})"er}" onChange="showHarga(${counter})" required>
+          <select class="browser-default custom-select modal-select" name="harga_barangs[${counter}][barang_id]" id="barang${counter}" required>
             <option></option>
       `;
       formInputs['harga_barangs']['data'].forEach(datum => {
@@ -503,11 +505,53 @@ if (isset($_GET['kode'])) {
                 <input type="email" id="${key}-input" name="${key}" class="form-control validate" ${formInputs[key]['required']?'required':''} value="${response.data[key]}">
               </div>
               `;
+              } else if (formInputs[key]['type'] == 'harga_barangs') {
+                modalEdit += `
+                  <div class="mb-4">
+                    <label>daftar barang</label><button class="btn btn-primary px-2 py-1" onClick="tambahBarang(event)"><i class="fas fa-plus"></i></button>
+                    <div class="table-responsive">
+                      <table class="table table-bordered table-sm">
+                        <thead>
+                          <tr>
+                            <th>Barang</th>
+                            <th class="th-lg">Harga Jual</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbBarang">
+                  `;
+                response.barangs.forEach(barang => {
+                  let table = `
+                    <tr id="row${counter}">
+                      <td>
+                        <select class="browser-default custom-select modal-select" name="harga_barangs[${counter}][barang_id]" id="barang${counter}" required>
+                          <option></option>
+                    `;
+                  formInputs['harga_barangs']['data'].forEach(datum => {
+                    table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
+                  })
+                  table += `
+                        </select>
+                      </td>
+                      <td><input type="number" name="harga_barangs[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
+                      <td><button class="btn btn-danger px-2 py-1" onClick="hapusBarang(event, 'row${counter}')"><i class="fas fa-minus"></i></button></td>
+                    </tr>
+                    `;
+                  modalEdit += table;
+                  counter++;
+
+                })
+                modalEdit += `
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  `;
               } else if (formInputs[key]['type'] == 'select') {
                 modalEdit += `
               <div class="mb-4">
                 <label for="${key}-input">${key.replace(/_/g,' ')}</label> ${formInputs[key]['required']?'<span class="red-text">*</span>':''}
-                <select class="browser-default custom-select" id="${key}-input" ${formInputs[key]['required']?'required':''} >
+                <select class="browser-default custom-select modal-select" id="${key}-input" name="${key}" ${formInputs[key]['required']?'required':''} >
               `;
                 if (Array.isArray(formInputs[key]['data'])) {
                   if (typeof formInputs[key]['data'][0] == 'object') {
@@ -571,6 +615,12 @@ if (isset($_GET['kode'])) {
             $('.modal-container').html(modalEdit);
             $('#modalUbah').modal('show');
 
+            $('.modal-select').select2({
+              theme: 'bootstrap4',
+              width: 'element',
+              placeholder: 'PILIH SALAH SATU'
+            });
+
             $('#provinsi-input').change(() => {
               const selKota = $('#kota-input');
               let provinsi = $('#provinsi-input').find(':selected').val();
@@ -586,30 +636,29 @@ if (isset($_GET['kode'])) {
             $('#edit-form').submit(event => {
               event.preventDefault();
 
-              // Get inputs
-              let inputs = {};
-              for (const key in formInputs) {
-                if (key == 'kode') {
-                  inputs[key] = $(`#${key}-input`).val().toUpperCase();
-                } else if (formInputs[key]['type'] == 'radio') {
-                  inputs[key] = $(`input[name=${key}]:checked`).attr('id');
-                } else {
-                  inputs[key] = $(`#${key}-input`).val();
-                }
-              }
-              console.log(inputs)
-
               // Get the form data
-              const formData = {
-                'id': id,
-                'inputs': inputs
-              };
+              const form = document.getElementById('edit-form');
+              const formData = new FormData(form);
+              formData.delete('pelanggan_id');
+              formData.append('id', response.data.id);
+              const inputs = form.querySelectorAll('input, textarea, select');
+              inputs.forEach(input => {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                  if (!input.checked) {
+                    formData.set(input.name, '');
+                  }
+                } else if (input.value === '') {
+                  formData.set(input.name, '');
+                }
+              });
 
               // Send the AJAX request
               $.ajax({
                 type: 'POST',
                 url: './api/detail_pelanggan_edit.php',
                 data: formData,
+                contentType: false,
+                  processData: false,
                 success: response => {
                   console.log(response)
                   response = JSON.parse(response);

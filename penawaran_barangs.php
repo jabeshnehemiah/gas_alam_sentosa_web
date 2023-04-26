@@ -564,7 +564,7 @@ include './head.php';
     let table = `
       <tr id="row${counter}">
         <td>
-          <select class="browser-default custom-select modal-select" name="detail_penawaran_barangs[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})"er}" onChange="showHarga(${counter})" required>
+          <select class="browser-default custom-select modal-select" name="detail_penawaran_barangs[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})" required>
             <option></option>
       `;
     formInputs['detail_penawaran_barangs']['data'].forEach(datum => {
