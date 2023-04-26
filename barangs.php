@@ -148,7 +148,7 @@
             keys.forEach(key => {
               if (datum[key] != null) {
                 if (key == 'gambar') {
-                  row += `<td><img class="p-0 btn" src="./files/barang/${datum[key]}" onClick="imgModal('${datum[key]}')" style="max-width: 8rem; max-height: 8rem;"/></td>`;
+                  row += `<td><button class="btn btn-link p-0 text-primary" onClick="imgModal('${datum[key]}')">${datum[key]}</button></td>`;
                 } else if (key != 'id') {
                   row += `<td>${datum[key]}</td>`;
                 }
@@ -159,8 +159,13 @@
             row += `
             <td>
               <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}','${datum['nama']}')"><i class="fas fa-edit"></i></button>
-            </td>
             `;
+            if (datum['gambar'] != null) {
+              row += `
+              <button type="button" class="btn btn-danger btn-sm m-0 px-3 delete-button" onClick="deleteModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-trash-alt"></i></button>
+            `;
+            }
+            row+='</td>';
             row += `</tr>`;
             body += row;
           });
@@ -261,7 +266,7 @@
         modalAdd += `
         <div class="mb-4">
           <p class="mb-2">${key.replace(/_/g,' ')} ${formInputs[key]['required']?'<span class="red-text">*</span>':''}</p>
-          <input type="file" id="${key}-input" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+          <input type="file" id="${key}-input" accept="image/*" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
         </div>
         `;
       } else if (formInputs[key]['type'] == 'select') {
@@ -413,7 +418,7 @@
               modalEdit += `
               <div class="mb-4">
                 <p class="mb-2">${key.replace(/_/g,' ')} ${formInputs[key]['required']?'<span class="red-text">*</span>':''}</p>
-                <input type="file" id="${key}-input" name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
+                <input type="file" id="${key}-input" accept="image/*"  name="${key}" ${formInputs[key]['required']?'required':''} ${formInputs[key]['disabled']?'disabled':''}>
               </div>
               `;
             } else if (formInputs[key]['type'] == 'select') {
@@ -494,18 +499,6 @@
           $('#edit-form').submit(event => {
             event.preventDefault();
 
-            // Get inputs
-            let inputs = {};
-            for (const key in formInputs) {
-              if (key == 'kode') {
-                inputs[key] = $(`#${key}-input`).val().toUpperCase();
-              } else if (formInputs[key]['type'] == 'radio') {
-                inputs[key] = $(`input[name=${key}]:checked`).attr('id');
-              } else {
-                inputs[key] = $(`#${key}-input`).val();
-              }
-            }
-
             // Get the form data
             const formData = new FormData(document.getElementById('edit-form'));
             formData.append('kode', kode);
@@ -556,7 +549,7 @@
             </div>
             <div class="modal-body">
               <div class="m-auto">
-                <img src="./files/barang/${id}" alt="${id}" style="width: 100%;" />
+                <img src="./files/barang/${id}?t=${Date.now()}" alt="${id}" style="width: 100%;" />
               </div>
             </div>
           </form>
@@ -567,6 +560,65 @@
 
     $('.modal-container').html(modalImg);
     $('#modalImg').modal('show');
+  }
+
+  const deleteModal = (id, kode) => {
+    let modalDelete = `
+          <div class="modal fade" id="modalHapus" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalHapusTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <form id="delete-form">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Hapus File Gambar ${kode}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                  <h2>Apakah Anda yakin akan menghapus file gambar ${kode}?</h2>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
+                    <button type="submit" class="btn btn-danger" id="simpan-button"><i class="fas fa-trash mr-2"></i>Nonaktifkan</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          `;
+    $('.modal-container').html(modalDelete);
+    $('#modalHapus').modal('show');
+
+    $('#delete-form').submit(event => {
+      event.preventDefault();
+
+      // Get the form data
+      const formData = {
+        'id': id,
+      };
+
+      // Send the AJAX request
+      $.ajax({
+        type: 'POST',
+        url: './api/barang_delete_file.php',
+        data: formData,
+        success: response => {
+          response = JSON.parse(response);
+          $('#modalHapus').modal('hide');
+          $(".modal-backdrop").remove();
+          if (response.success) {
+            showAlert('success', response.message);
+          } else {
+            showAlert('danger', response.message);
+          }
+          loadPage();
+        },
+        error: (jqXHR, textStatus, errorThrown) => {
+          console.log(textStatus, errorThrown);
+        }
+      });
+    })
+
   }
 </script>
 

@@ -100,7 +100,10 @@ include './head.php';
         <div class="d-flex justify-content-end pt-3">
           <div class="w-25">
             <h6 class="text-center pb-5 mb-5">Marketing</h6>
-            <hr class="border-dark">
+            <div>
+              <h6 class="text-center" id="print-marketing"></h6>
+              <h6 class="text-center" id="print-konfirmasi"></h6>
+            </div>
           </div>
         </div>
       </div>
@@ -290,11 +293,16 @@ include './head.php';
             `;
             <?php if ($_SESSION['role'] <= 4) { ?>
               if (datum['konfirmasi'] == null) {
-                row += `<button type="button" class="btn btn-success btn-sm m-0 px-3 validate-button" onClick="validateModal('${datum['id']}','${datum['kode']}')"><i class="fas fa-check-circle"></i></button>`;
+                row += `<button type="button" class="btn btn-info btn-sm m-0 px-3 validate-button" onClick="infoModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-info-circle"></i></button>`;
               } else {
                 row += `<button type="button" class="btn btn-default btn-sm m-0 px-3 print-button" onClick="print('${datum['kode']}')"><i class="fas fa-print"></i></button>`;
               }
             <?php } ?>
+            if (datum['file_po'] != null) {
+              row += `
+              <button type="button" class="btn btn-danger btn-sm m-0 px-3 delete-button" onClick="deleteModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-trash-alt"></i></button>
+            `;
+            }
             row += '</td>';
             row += `</tr>`;
             body += row;
@@ -621,7 +629,6 @@ include './head.php';
       if (!$.trim($("#tbBarang").html())) {
         alert('Daftar barang tidak boleh kosong.');
       } else {
-
         // Get the form data
         const form = document.getElementById('input-form');
         const formData = new FormData(document.getElementById('input-form'));
@@ -1042,7 +1049,7 @@ include './head.php';
               <div class="modal-content">
                 <form id="validate-form">
                   <div class="modal-header">
-                    <h5 class="modal-title">Konfirmasi Request Order ${kode}</h5>
+                    <h5 class="modal-title">Konfirmasi ${kode}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -1052,7 +1059,7 @@ include './head.php';
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
-                    <button type="submit" class="btn btn-primary" id="simpan-button"><i class="fas fa-check-circle mr-2"></i>Validasi</button>
+                    <button type="submit" class="btn btn-primary" id="simpan-button"><i class="fas fa-check-circle mr-2"></i>Konfirmasi</button>
                   </div>
                 </form>
               </div>
@@ -1091,6 +1098,198 @@ include './head.php';
     })
   }
 
+  const infoModal = (id, kode) => {
+    $.ajax({
+      type: 'POST',
+      url: './api/request_order_get_one.php',
+      data: {
+        'kode': kode,
+      },
+      success: response => {
+        response = JSON.parse(response);
+        if (response.success) {
+          let modalInfo = `
+          <div class="modal fade" id="modalInfo" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalInfoTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+              <div class="modal-content">
+                <form id="validate-form">
+                  <div class="modal-header">
+                    <h5 class="modal-title">${kode}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div id="info" class="p-5">
+                      <div class="d-flex justify-content-between pb-3">
+                        <div>
+                          <h4>PT Gas Alam Sentosa</h4>
+                          <h6>Ruko CBD Puncak 7F Toll</h6>
+                          <h6>Jl. Keramat I, Surabaya, Jawa Timur 60229</h6>
+                        </div>
+                        <div class="text-right">
+                          <h2>REQUEST ORDER</h2>
+                          <h4 id="info-kode"></h4>
+                        </div>
+                      </div>
+                      <hr class="border-dark">
+                      <div class="d-flex justify-content-between pt-3 pb-3">
+                        <div class="w-50">
+                          <h5>Permintaan Oleh</h5>
+                          <div class="d-flex">
+                            <div class="w-25">
+                              <h6>Nama</h6>
+                              <h6>Alamat</h6>
+                            </div>
+                            <div>
+                              <h6>:</h6>
+                              <h6>:</h6>
+                            </div>
+                            <div class="ml-1">
+                              <h6 id="info-nama"></h6>
+                              <h6 id="info-alamat"></h6>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="w-25">
+                          <h5>&nbsp;</h5>
+                          <div class="d-flex">
+                            <div class="w-50">
+                              <h6>No. PO</h6>
+                              <h6>Tanggal</h6>
+                            </div>
+                            <div>
+                              <h6>:</h6>
+                              <h6>:</h6>
+                            </div>
+                            <div class="ml-1">
+                              <h6 id="info-po"></h6>
+                              <h6 id="info-tanggal"></h6>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p>Mengajukan permintaan barang-barang sebagai berikut: </p>
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">BARANG</th>
+                            <th scope="col">HARGA (Rp)</th>
+                            <th scope="col">PPN (Rp)</th>
+                            <th scope="col">JUMLAH</th>
+                            <th scope="col">SATUAN</th>
+                            <th scope="col">SUBTOTAL (Rp)</th>
+                          </tr>
+                        </thead>
+                        <tbody id="info-barangs">
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="6">Diskon</td>
+                            <td id="info-diskon"></td>
+                          </tr>
+                          <tr>
+                            <td colspan="6">Biaya Tambahan</td>
+                            <td id="info-biaya"></td>
+                          </tr>
+                          <tr>
+                            <th scope="row" colspan="6">TOTAL (Rp)</th>
+                            <th id="info-total"></th>
+                          </tr>
+                        </tfoot>
+                      </table>
+                      <div class="d-flex justify-content-end pt-3">
+                        <div class="w-25">
+                          <h6 class="text-center pb-5 mb-5">Marketing</h6>
+                          <div>
+                            <h6 class="text-center" id="info-marketing"></h6>
+                            <h6 class="text-center" id="info-konfirmasi"></h6>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-times-circle mr-2"></i>Kembali</button>
+                    <button type="submit" class="btn btn-primary" id="simpan-button"><i class="fas fa-check-circle mr-2"></i>Konfirmasi</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          `;
+          $('.modal-container').html(modalInfo);
+          $('#modalInfo').modal('show');
+
+          const date = new Date(response.data.tanggal_dibuat)
+          $('#info-kode').text(response.data.kode);
+          $('#info-nama').text(response.data.pelanggan);
+          $('#info-alamat').text(response.data.alamat);
+          $('#info-po').text(response.data.no_po);
+          $('#info-diskon').text(response.data.diskon);
+          $('#info-biaya').text(response.data.biaya_tambahan);
+          $('#info-tanggal').text(date.toLocaleDateString('id', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }));
+        }
+        let total = response.data.biaya_tambahan - response.data.diskon
+        let table = '';
+        let num = 1;
+        response.barangs.forEach(barang => {
+          table += `
+          <tr>
+            <td>${num}</td>
+            <td>${barang.barang}</td>
+            <td>${barang.harga_jual}</td>
+            <td>${barang.ppn*barang.harga_jual/100}</td>
+            <td>${barang.kuantitas}</td>
+            <td>${barang.satuan}</td>
+            <td>${barang.subtotal}</td>
+          </tr>
+          `;
+          num++
+          total += barang.subtotal;
+        });
+        $('#info-barangs').html(table);
+        $('#info-total').text(total);
+
+        $('#validate-form').submit(event => {
+          event.preventDefault();
+
+          // Send the AJAX request
+          $.ajax({
+            type: 'POST',
+            url: './api/request_order_edit.php',
+            data: {
+              'id': id,
+              'manager_id': <?php echo $_SESSION['id']; ?>
+            },
+            success: response => {
+              response = JSON.parse(response);
+              $('#modalInfo').modal('hide');
+              $(".modal-backdrop").remove();
+              if (response.success) {
+                showAlert('success', response.message);
+              } else {
+                showAlert('danger', response.message);
+              }
+              loadPage();
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              console.log(textStatus, errorThrown);
+            }
+          });
+        })
+      },
+      error: (jqXHR, textStatus, errorThrown) => {
+        console.log(textStatus, errorThrown);
+      }
+    });
+  }
+
   const print = (kode) => {
     $.ajax({
       type: 'POST',
@@ -1100,7 +1299,6 @@ include './head.php';
       },
       success: response => {
         response = JSON.parse(response);
-        console.log(response)
         if (response.success) {
           const date = new Date(response.data.tanggal_dibuat)
           $('#print-kode').text(response.data.kode);
@@ -1109,6 +1307,8 @@ include './head.php';
           $('#print-po').text(response.data.no_po);
           $('#print-diskon').text(response.data.diskon);
           $('#print-biaya').text(response.data.biaya_tambahan);
+          $('#print-marketing').text("<?php echo $_SESSION['nama'] ?>");
+          $('#print-konfirmasi').text(response.data.tanggal_konfirmasi);
           $('#print-tanggal').text(date.toLocaleDateString('id', {
             day: 'numeric',
             month: 'long',
@@ -1144,6 +1344,65 @@ include './head.php';
         console.log(textStatus, errorThrown);
       }
     });
+  }
+
+  const deleteModal = (id, kode) => {
+    let modalDelete = `
+          <div class="modal fade" id="modalHapus" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalHapusTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <form id="delete-form">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Hapus File PO ${kode}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                  <h2>Apakah Anda yakin akan menghapus file PO ${kode}?</h2>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
+                    <button type="submit" class="btn btn-danger" id="simpan-button"><i class="fas fa-trash mr-2"></i>Nonaktifkan</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          `;
+    $('.modal-container').html(modalDelete);
+    $('#modalHapus').modal('show');
+
+    $('#delete-form').submit(event => {
+      event.preventDefault();
+
+      // Get the form data
+      const formData = {
+        'id': id,
+      };
+
+      // Send the AJAX request
+      $.ajax({
+        type: 'POST',
+        url: './api/request_order_delete_file.php',
+        data: formData,
+        success: response => {
+          response = JSON.parse(response);
+          $('#modalHapus').modal('hide');
+          $(".modal-backdrop").remove();
+          if (response.success) {
+            showAlert('success', response.message);
+          } else {
+            showAlert('danger', response.message);
+          }
+          loadPage();
+        },
+        error: (jqXHR, textStatus, errorThrown) => {
+          console.log(textStatus, errorThrown);
+        }
+      });
+    })
+
   }
 </script>
 

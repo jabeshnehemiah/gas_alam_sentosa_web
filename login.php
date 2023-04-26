@@ -45,8 +45,7 @@ if (isset($_SESSION['username'])) {
           response = JSON.parse(response);
           // Handle the response
           if (response.success) {
-            // Redirect to the home page
-            window.location.href = './index.php';
+            window.location.href = './' + response.changePassword == true ? 'change_password.php' : 'index.php';
           } else {
             // Display the error message
             alert(response.message);

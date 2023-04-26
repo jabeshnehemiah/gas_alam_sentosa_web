@@ -6,42 +6,43 @@ session_start();
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  try{
-  $_POST['kode'] = generateKode('users', 0, $conn, null, null, $_POST['nama']);
+  try {
+    $_POST['kode'] = generateKode('users', 0, $conn, null, null, $_POST['nama']);
+    $_POST['password'] = password_hash('password', PASSWORD_DEFAULT);
 
-  // Get keys
-  $keys = array_keys($_POST);
+    // Get keys
+    $keys = array_keys($_POST);
 
-  // Get values
-  $values = array_values($_POST);
+    // Get values
+    $values = array_values($_POST);
 
-  // Prepare SQL
-  $placeholder = '';
-  $params = '';
-  $sql = "INSERT INTO users (";
-  for ($i = 0; $i < count($_POST); $i++) {
-    $key = $keys[$i];
-    if ($i == count($_POST) - 1) {
-      $sql .= "$key";
-      $placeholder .= '?';
-    } else {
-      $sql .= "$key, ";
-      $placeholder .= '?,';
+    // Prepare SQL
+    $placeholder = '';
+    $params = '';
+    $sql = "INSERT INTO users (";
+    for ($i = 0; $i < count($_POST); $i++) {
+      $key = $keys[$i];
+      if ($i == count($_POST) - 1) {
+        $sql .= "$key";
+        $placeholder .= '?';
+      } else {
+        $sql .= "$key, ";
+        $placeholder .= '?,';
+      }
+      $params .= 's';
     }
-    $params .= 's';
+    $sql .= ") VALUES(" . $placeholder . ')';
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($params, ...$values);
+    $stmt->execute();
+    if ($stmt->affected_rows > 0) {
+      $response = ['success' => true, 'message' => "Berhasil menambahkan data user."];
+    } else {
+      $response = ['success' => false, 'message' => "Gagal menambahkan data user."];
+    }
+  } catch (Exception $e) {
+    $response = ['success' => false, 'message' => "Username '" . $_POST['username'] . "' sudah terpakai."];
   }
-  $sql .= ") VALUES(" . $placeholder . ')';
-  $stmt = $conn->prepare($sql);
-  $stmt->bind_param($params, ...$values);
-  $stmt->execute();
-  if ($stmt->affected_rows > 0) {
-    $response = ['success' => true, 'message' => "Berhasil menambahkan data user."];
-  } else {
-    $response = ['success' => false, 'message' => "Gagal menambahkan data user."];
-  }
-}catch(Exception $e){
-  $response = ['success' => false, 'message' => "Username '".$_POST['username']."' sudah terpakai."];
-}
 
   echo json_encode($response);
 }

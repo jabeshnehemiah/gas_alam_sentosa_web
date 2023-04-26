@@ -19,18 +19,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get values
     $values = array_values($_POST);
 
-    // Prepare SQL
-    $placeholder = '';
-    $params = '';
-    $sql = "UPDATE request_orders SET manager_id = null, ";
-    for ($i = 0; $i < count($_POST); $i++) {
-      $key = $keys[$i];
-      if ($i == count($_POST) - 1) {
-        $sql .= "$key = ? ";
-      } else {
-        $sql .= "$key = ?, ";
+    if(isset($_POST['manager_id'])){
+      $sql = "UPDATE request_orders SET manager_id = ?, tanggal_konfirmasi = NOW() ";
+      $params = 's';
+    }else{
+      $placeholder = '';
+      $params = '';
+      $sql = "UPDATE request_orders SET manager_id = null, ";
+      for ($i = 0; $i < count($_POST); $i++) {
+        $key = $keys[$i];
+        if ($i == count($_POST) - 1) {
+          $sql .= "$key = ? ";
+        } else {
+          $sql .= "$key = ?, ";
+        }
+        $params .= 's';
       }
-      $params .= 's';
     }
     $sql .= "WHERE id = '$id'";
     $stmt = $conn->prepare($sql);
@@ -68,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql = "UPDATE request_orders SET file_po = '$target_file' WHERE id = $id";
             $stmt = $conn->prepare($sql);
             $stmt->execute();
-            $success = true;
           }
         }
       }

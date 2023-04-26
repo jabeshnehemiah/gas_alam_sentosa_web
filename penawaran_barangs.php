@@ -515,46 +515,49 @@ include './head.php';
     $('#input-form').submit((event) => {
       event.preventDefault();
 
-      // Get the form data
-      const form = document.getElementById('input-form');
-      const formData = new FormData(form);
-      formData.delete('pelanggan_id');
-      formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
-      const inputs = form.querySelectorAll('input, textarea, select');
-      inputs.forEach(input => {
-        if (input.type === 'checkbox' || input.type === 'radio') {
-          if (!input.checked) {
+      if (!$.trim($("#tbBarang").html())) {
+        alert('Daftar barang tidak boleh kosong.');
+      } else {
+        // Get the form data
+        const form = document.getElementById('input-form');
+        const formData = new FormData(form);
+        formData.delete('pelanggan_id');
+        formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            if (!input.checked) {
+              formData.set(input.name, '');
+            }
+          } else if (input.value === '') {
             formData.set(input.name, '');
           }
-        } else if (input.value === '') {
-          formData.set(input.name, '');
-        }
-      });
+        });
 
 
-      // Send the AJAX request
-      $.ajax({
-        type: 'POST',
-        url: './api/penawaran_barang_add.php',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: response => {
-          console.log(response);
-          response = JSON.parse(response);
-          $('#modalTambah').modal('hide');
-          $(".modal-backdrop").remove();
-          if (response.success) {
-            showAlert('success', response.message);
-          } else {
-            showAlert('danger', response.message);
+        // Send the AJAX request
+        $.ajax({
+          type: 'POST',
+          url: './api/penawaran_barang_add.php',
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: response => {
+            response = JSON.parse(response);
+            $('#modalTambah').modal('hide');
+            $(".modal-backdrop").remove();
+            if (response.success) {
+              showAlert('success', response.message);
+            } else {
+              showAlert('danger', response.message);
+            }
+            loadPage();
+          },
+          error: (jqXHR, textStatus, errorThrown) => {
+            console.log(textStatus, errorThrown);
           }
-          loadPage();
-        },
-        error: (jqXHR, textStatus, errorThrown) => {
-          console.log(textStatus, errorThrown);
-        }
-      });
+        });
+      }
     });
   }
 
@@ -864,45 +867,49 @@ include './head.php';
               $('#edit-form').submit(event => {
                 event.preventDefault();
 
-                // Get the form data
-                const form = document.getElementById('edit-form');
-                const formData = new FormData(form);
-                formData.delete('pelanggan_id');
-                formData.append('id', response.data.id);
-                const inputs = form.querySelectorAll('input, textarea, select');
-                inputs.forEach(input => {
-                  if (input.type === 'checkbox' || input.type === 'radio') {
-                    if (!input.checked) {
+                if (!$.trim($("#tbBarang").html())) {
+                  alert('Daftar barang tidak boleh kosong.');
+                } else {
+                  // Get the form data
+                  const form = document.getElementById('edit-form');
+                  const formData = new FormData(form);
+                  formData.delete('pelanggan_id');
+                  formData.append('id', response.data.id);
+                  const inputs = form.querySelectorAll('input, textarea, select');
+                  inputs.forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                      if (!input.checked) {
+                        formData.set(input.name, '');
+                      }
+                    } else if (input.value === '') {
                       formData.set(input.name, '');
                     }
-                  } else if (input.value === '') {
-                    formData.set(input.name, '');
-                  }
-                });
+                  });
 
-                // Send the AJAX request
-                $.ajax({
-                  type: 'POST',
-                  url: './api/penawaran_barang_edit.php',
-                  data: formData,
-                  contentType: false,
-                  processData: false,
-                  success: response => {
-                    console.log(response)
-                    response = JSON.parse(response);
-                    $('#modalUbah').modal('hide');
-                    $(".modal-backdrop").remove();
-                    if (response.success) {
-                      showAlert('success', response.message);
-                    } else {
-                      showAlert('danger', response.message);
+                  // Send the AJAX request
+                  $.ajax({
+                    type: 'POST',
+                    url: './api/penawaran_barang_edit.php',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: response => {
+                      console.log(response)
+                      response = JSON.parse(response);
+                      $('#modalUbah').modal('hide');
+                      $(".modal-backdrop").remove();
+                      if (response.success) {
+                        showAlert('success', response.message);
+                      } else {
+                        showAlert('danger', response.message);
+                      }
+                      loadPage();
+                    },
+                    error: (jqXHR, textStatus, errorThrown) => {
+                      console.log(textStatus, errorThrown);
                     }
-                    loadPage();
-                  },
-                  error: (jqXHR, textStatus, errorThrown) => {
-                    console.log(textStatus, errorThrown);
-                  }
-                });
+                  });
+                }
               })
             },
             error: (jqXHR, textStatus, errorThrown) => {

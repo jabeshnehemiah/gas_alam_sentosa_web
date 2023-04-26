@@ -5,8 +5,9 @@ include 'connection.php';
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (isset($_POST['kode'])) {
+    // Print
     $sql =
-      "SELECT ro.id, ro.detail_pelanggan_id, ro.diskon, ro.biaya_tambahan, ro.tanggal_kirim, ro.no_po, ro.tanggal_po, dro.barang_id, dro.kuantitas, dro.harga_jual, dro.ppn, b.harga_beli, ro.kode, CONCAT(p.badan_usaha,' ',p.nama_perusahaan) pelanggan, dp.alamat, ro.tanggal_dibuat, b.nama barang, s.nama satuan, dro.subtotal
+      "SELECT ro.id, ro.detail_pelanggan_id, ro.diskon, ro.biaya_tambahan, ro.tanggal_kirim, ro.no_po, ro.tanggal_po, dro.barang_id, dro.kuantitas, dro.harga_jual, dro.ppn, b.harga_beli, ro.kode, CONCAT(p.badan_usaha,' ',p.nama_perusahaan) pelanggan, dp.alamat, ro.tanggal_dibuat, b.nama barang, s.nama satuan, dro.subtotal, ro.tanggal_konfirmasi
       FROM request_orders ro 
       INNER JOIN detail_pelanggans dp ON ro.detail_pelanggan_id = dp.id
       INNER JOIN pelanggans p ON dp.pelanggan_id = p.id
@@ -20,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
     $res = $stmt->get_result();
   } else if (isset($_POST['id'])) {
+    // Edit
     $sql =
       "SELECT ro.id, ro.detail_pelanggan_id, ro.diskon, ro.biaya_tambahan, ro.tanggal_kirim, dro.barang_id, (dro.kuantitas - COALESCE(t.kuantitas, 0)) kuantitas, b.harga_beli, dro.harga_jual, dro.ppn, dro.subtotal, b.nama barang, s.nama satuan 
       FROM request_orders ro 
