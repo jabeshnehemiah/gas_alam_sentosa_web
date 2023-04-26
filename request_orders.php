@@ -152,7 +152,6 @@ include './head.php';
 
   $(document).ready(function() {
     loadPelanggans();
-    loadBarangs();
     loadPpn();
 
     loadPage();
@@ -179,13 +178,13 @@ include './head.php';
     });
   }
 
-  const loadBarangs = () => {
+  const loadBarangs = (id) => {
     // Send the AJAX request
     $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
       data: {
-        'alur': 'Jual'
+        'detail_pelanggan_id': id
       },
       success: response => {
         response = JSON.parse(response);
@@ -448,7 +447,6 @@ include './head.php';
               <thead>
                 <tr>
                   <th class="th-lg">Barang</th>
-                  <th class="th-lg">Harga Beli</th>
                   <th class="th-lg">Harga Jual</th>
                   <th>Kuantitas</th>
                   <th>PPN</th>
@@ -561,6 +559,7 @@ include './head.php';
 
     $('#detail_pelanggan_id-input').change(() => {
       let detail = $('#detail_pelanggan_id-input').find(':selected').val();
+      loadBarangs(detail);
       $.ajax({
         type: 'POST',
         url: './api/pipeline_marketing_get_one.php',
@@ -579,7 +578,7 @@ include './head.php';
                   let table = `
                     <tr id="row${counter}">
                       <td>
-                        <select class="browser-default custom-select modal-select" name="detail_request_orders[${counter}][barang_id]" id="barang${counter}" obChange="showHarga(${counter})" required>
+                        <select class="browser-default custom-select modal-select" name="detail_request_orders[${counter}][barang_id]" id="barang${counter}" onChange="showHarga(${counter})" required>
                           <option></option>
                     `;
                   formInputs['detail_request_orders']['data'].forEach(datum => {
@@ -588,8 +587,11 @@ include './head.php';
                   table += `
                         </select>
                       </td>
-                      <td><input type="number" id="harga${counter}" class="form-control validate" disabled></td>
-                      <td><input type="number" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" required></td>
+                      <td>
+                        <input type="number" id="harga-disabled${counter}" class="form-control validate" value="${barang.harga_jual}" disabled>
+                        <input type="number" id="harga-jual${counter}" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" hidden required>
+                        <input type="number" id="harga-beli${counter}" name="detail_request_orders[${counter}][harga_beli]" class="form-control validate" value="${barang.harga_beli}" hidden required>
+                      </td>
                       <td><input type="number" name="detail_request_orders[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
                       <td>
                         <div class="custom-control custom-checkbox">
@@ -687,8 +689,11 @@ include './head.php';
     table += `
           </select>
         </td>
-        <td><input type="number" id="harga${counter}" class="form-control validate" disabled></td>
-        <td><input type="number" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" required></td>
+        <td>
+          <input type="number" id="harga-disabled${counter}" class="form-control validate" disabled>
+          <input type="number" id="harga-jual${counter}" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" hidden required>
+          <input type="number" id="harga-beli${counter}" name="detail_request_orders[${counter}][harga_beli]" class="form-control validate" hidden required>
+        </td>
         <td><input type="number" name="detail_request_orders[${counter}][kuantitas]" class="form-control validate" required></td>
         <td>
           <div class="custom-control custom-checkbox">
@@ -719,7 +724,9 @@ include './head.php';
     const barang = formInputs['detail_request_orders']['data'].find(obj => {
       return obj.id == $(`#barang${id} option:selected`).val()
     })
-    $(`#harga${id}`).val(barang.harga_beli)
+    $(`#harga-disabled${id}`).val(barang.harga_jual);
+    $(`#harga-jual${id}`).val(barang.harga_jual);
+    $(`#harga-beli${id}`).val(barang.harga_beli);
   }
 
   const editModal = (kode, pelanggan) => {
@@ -732,7 +739,7 @@ include './head.php';
       },
       success: response => {
         response = JSON.parse(response);
-        console.log(response)
+        loadBarangs(response.data.detail_pelanggan_id)
         if (response.success) {
           $.ajax({
             type: 'POST',
@@ -802,7 +809,6 @@ include './head.php';
                         <thead>
                           <tr>
                             <th class="th-lg">Barang</th>
-                            <th class="th-lg">Harga Beli</th>
                             <th class="th-lg">Harga Jual</th>
                             <th>Kuantitas</th>
                             <th>PPN</th>
@@ -824,8 +830,11 @@ include './head.php';
                     table += `
                         </select>
                       </td>
-                      <td><input type="number" id="harga${counter}" value="${barang.harga_beli}" class="form-control validate" disabled></td>
-                      <td><input type="number" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
+                      <td>
+                        <input type="number" id="harga-disabled${counter}" class="form-control validate" value="${barang.harga_jual}" disabled>
+                        <input type="number" id="harga-jual${counter}" name="detail_request_orders[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" hidden required>
+                        <input type="number" id="harga-beli${counter}" name="detail_request_orders[${counter}][harga_beli]" class="form-control validate" value="${barang.harga_beli}" hidden required>
+                      </td>
                       <td><input type="number" name="detail_request_orders[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
                       <td>
                         <div class="custom-control custom-checkbox">
@@ -1004,6 +1013,7 @@ include './head.php';
                       formData.set(input.name, '');
                     }
                   });
+                  formData.delete('file_po');
 
                   // Send the AJAX request
                   $.ajax({

@@ -19,10 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get values
     $values = array_values($_POST);
 
-    if(isset($_POST['manager_id'])){
+    if (isset($_POST['manager_id'])) {
       $sql = "UPDATE request_orders SET manager_id = ?, tanggal_konfirmasi = NOW() ";
       $params = 's';
-    }else{
+    } else {
       $placeholder = '';
       $params = '';
       $sql = "UPDATE request_orders SET manager_id = null, ";
@@ -58,13 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fileType = strtolower(pathinfo($_FILES['file_po']['name'], PATHINFO_EXTENSION));
         $target_file = str_replace('/', '_', $kode) . '.' . $fileType;
         $uploadOk = 1;
-  
+
         // Check file size
         if ($_FILES["file_po"]["size"] > 2000000) {
           $error = "File lebih dari 2 MB";
           $uploadOk = 0;
         }
-  
+
         // Check if $uploadOk is set to 0 by an error
         if ($uploadOk == 1) {
           // if everything is ok, try to upload file
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           }
         }
       }
-    }  
+    }
 
     if (isset($details)) {
       $sql = "SELECT jumlah FROM ppns WHERE aktif = 1";

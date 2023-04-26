@@ -57,7 +57,6 @@ include './head.php';
 
   $(document).ready(function() {
     loadPelanggans();
-    loadBarangs();
 
     loadPage();
 
@@ -81,13 +80,13 @@ include './head.php';
     });
   }
 
-  const loadBarangs = () => {
+  const loadBarangs = (id) => {
     // Send the AJAX request
     $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
       data:{
-        'alur':'Jual'
+        'detail_pelanggan_id':id
       },
       success: response => {
         response = JSON.parse(response);
@@ -386,6 +385,7 @@ include './head.php';
 
     $('#detail_pelanggan_id-input').change(() => {
       let detail = $('#detail_pelanggan_id-input').find(':selected').val();
+      loadBarangs(detail);
       $.ajax({
         type: 'POST',
         url: './api/pipeline_marketing_get_one.php',
@@ -532,7 +532,7 @@ include './head.php';
       },
       success: response => {
         response = JSON.parse(response);
-        console.log(response)
+        loadBarangs(response.data.detail_pelanggan_id);
         if (response.success) {
           $.ajax({
             type: 'POST',

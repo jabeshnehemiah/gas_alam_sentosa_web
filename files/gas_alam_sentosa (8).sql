@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 19, 2023 at 11:01 AM
+-- Generation Time: Apr 26, 2023 at 10:53 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -49,7 +49,7 @@ INSERT INTO `barangs` (`id`, `kode`, `nama`, `tipe`, `alur`, `harga_beli`, `file
 (5, '001110001', 'coba ahoirw ajsjs', 'Persediaan', 'Jual', 1000, '001110001.png', '134', 1, 1),
 (6, '001060001', 'ruhag', 'Persediaan', 'Jual', 13989, NULL, '8928', 1, 1),
 (7, '001070001', 'jnr', 'Jasa', 'Beli', 23987, NULL, '9302', 1, 1),
-(8, '001080001', 'tes', NULL, 'Beli', 392049, NULL, '91340', 1, 8),
+(8, '001080001', 'tes', NULL, 'All', 392049, NULL, '91340', 1, 8),
 (9, '002110001', 'ekg', NULL, 'All', 324902, NULL, '0293049', 2, 11),
 (10, '002110002', 'ekg', NULL, 'All', 324902, NULL, '0293049', 2, 11),
 (11, '001050001', 'akeg', NULL, 'Jual', 2983498, NULL, '2942', 1, 5),
@@ -78,7 +78,6 @@ CREATE TABLE `detail_pelanggans` (
   `nama_finance` varchar(45) DEFAULT NULL,
   `kontak_finance` varchar(45) DEFAULT NULL,
   `email_finance` varchar(45) DEFAULT NULL,
-  `harga_jual` double DEFAULT NULL,
   `top` int(11) DEFAULT NULL,
   `keterangan_top` varchar(45) DEFAULT NULL,
   `pelanggan_id` int(11) NOT NULL
@@ -88,10 +87,13 @@ CREATE TABLE `detail_pelanggans` (
 -- Dumping data for table `detail_pelanggans`
 --
 
-INSERT INTO `detail_pelanggans` (`id`, `alamat`, `kota`, `provinsi`, `kode_pos`, `nama_purchasing`, `kontak_purchasing`, `email_purchasing`, `nama_finance`, `kontak_finance`, `email_finance`, `harga_jual`, `top`, `keterangan_top`, `pelanggan_id`) VALUES
-(6, 'Jl. Dummy Detail No.12345', 'Tabanan', 'Bali', '', 'purchasing', '12345', '', 'finance', '12345', '', 100000, 2, NULL, 7),
-(7, 'Jl. Blabla', 'Surabaya', 'Jawa Timur', '12345', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5, 'setelah order', 7),
-(8, 'ijrgaijg', 'Jembrana', 'Bali', '1234', '', '', '', '', '', '', 0, 11, '', 7);
+INSERT INTO `detail_pelanggans` (`id`, `alamat`, `kota`, `provinsi`, `kode_pos`, `nama_purchasing`, `kontak_purchasing`, `email_purchasing`, `nama_finance`, `kontak_finance`, `email_finance`, `top`, `keterangan_top`, `pelanggan_id`) VALUES
+(6, 'Jl. Dummy Detail No.12345', 'Tabanan', 'Bali', '', 'purchasing', '12345', '', 'finance', '12345', '', 2, NULL, 7),
+(7, 'Jl. Blabla', 'Surabaya', 'Jawa Timur', '12345', NULL, NULL, NULL, NULL, NULL, NULL, 5, 'setelah order', 7),
+(8, 'ijrgaijg', 'Jembrana', 'Bali', '1234', '', '', '', '', '', '', 11, '', 7),
+(16, 'agkw', NULL, NULL, '', '', '', '', '', '', '', 4, '', 10),
+(17, 'abcs', 'Gianyar', 'Bali', '', '', '', '', '', '', '', 13, '', 10),
+(18, 'abks', 'Jembrana', 'Bali', '', '', '', '', '', '', '', 5, '', 10);
 
 -- --------------------------------------------------------
 
@@ -103,6 +105,7 @@ CREATE TABLE `detail_penawaran_barangs` (
   `barang_id` int(11) NOT NULL,
   `penawaran_barang_id` int(11) NOT NULL,
   `kuantitas` double DEFAULT NULL,
+  `harga_beli` double DEFAULT NULL,
   `harga_jual` double DEFAULT NULL,
   `ppn` double DEFAULT NULL,
   `subtotal` double DEFAULT NULL
@@ -112,11 +115,13 @@ CREATE TABLE `detail_penawaran_barangs` (
 -- Dumping data for table `detail_penawaran_barangs`
 --
 
-INSERT INTO `detail_penawaran_barangs` (`barang_id`, `penawaran_barang_id`, `kuantitas`, `harga_jual`, `ppn`, `subtotal`) VALUES
-(4, 7, 13, 12000, 11, 173160),
-(4, 25, 12, 15000, 11, 199800),
-(4, 26, 2, 12000, 11, 26640),
-(5, 25, 10, 40000, 11, 444000);
+INSERT INTO `detail_penawaran_barangs` (`barang_id`, `penawaran_barang_id`, `kuantitas`, `harga_beli`, `harga_jual`, `ppn`, `subtotal`) VALUES
+(4, 7, 13, NULL, 12000, 11, 173160),
+(4, 25, 12, NULL, 15000, 11, 199800),
+(4, 26, 2, NULL, 12000, 11, 26640),
+(5, 25, 10, NULL, 40000, 11, 444000),
+(5, 28, 5, 1000, 15000, 11, 83250),
+(8, 28, 10, 392049, 20000, 11, 222000);
 
 -- --------------------------------------------------------
 
@@ -139,7 +144,11 @@ INSERT INTO `detail_pipeline_marketings` (`barang_id`, `pipeline_marketing_id`, 
 (4, 12, 2),
 (5, 13, 5),
 (5, 15, 5),
-(5, 16, 2);
+(5, 16, 2),
+(5, 17, 2),
+(5, 18, 2),
+(8, 17, 5),
+(8, 18, 5);
 
 -- --------------------------------------------------------
 
@@ -166,7 +175,9 @@ INSERT INTO `detail_request_orders` (`barang_id`, `request_order_id`, `harga_bel
 (4, 11, NULL, 2, 13000, 11, 28860),
 (4, 20, NULL, 2, 1200, 11, 2664),
 (5, 23, NULL, 5, 135732, 11, 753313),
-(5, 24, NULL, 3, 15000, 11, 49950),
+(5, 24, NULL, 3, 15500, 11, 51615),
+(5, 25, 1000, 7, 15000, 11, 116550),
+(8, 25, 392049, 9, 20000, 11, 199800),
 (11, 24, NULL, 2, 1400000, 0, 3108000),
 (13, 24, NULL, 5, 10000, 11, 55500);
 
@@ -180,6 +191,7 @@ CREATE TABLE `detail_surat_jalans` (
   `barang_id` int(11) NOT NULL,
   `surat_jalan_id` int(11) NOT NULL,
   `kuantitas` double DEFAULT NULL,
+  `harga_beli` double DEFAULT NULL,
   `harga_jual` double DEFAULT NULL,
   `ppn` double DEFAULT NULL,
   `subtotal` double DEFAULT NULL
@@ -189,9 +201,9 @@ CREATE TABLE `detail_surat_jalans` (
 -- Dumping data for table `detail_surat_jalans`
 --
 
-INSERT INTO `detail_surat_jalans` (`barang_id`, `surat_jalan_id`, `kuantitas`, `harga_jual`, `ppn`, `subtotal`) VALUES
-(4, 9, 3, 12000, 11, 39960),
-(5, 8, 5, 40000, 11, 222000);
+INSERT INTO `detail_surat_jalans` (`barang_id`, `surat_jalan_id`, `kuantitas`, `harga_beli`, `harga_jual`, `ppn`, `subtotal`) VALUES
+(4, 9, 3, NULL, 12000, 11, 39960),
+(5, 8, 5, NULL, 40000, 11, 222000);
 
 -- --------------------------------------------------------
 
@@ -229,8 +241,13 @@ CREATE TABLE `harga_barangs` (
 --
 
 INSERT INTO `harga_barangs` (`barang_id`, `detail_pelanggan_id`, `harga_jual`) VALUES
+(4, 16, 2100),
 (5, 6, 15000),
-(8, 6, 20000);
+(5, 18, 50000),
+(6, 17, 5000),
+(6, 18, 6000),
+(8, 6, 20000),
+(11, 18, 14000);
 
 -- --------------------------------------------------------
 
@@ -320,7 +337,8 @@ INSERT INTO `penawaran_barangs` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tang
 (23, 'PWR/IT/2023/04/0007', 0, 0, '2023-04-10', 6, 1),
 (25, 'PWR/IT/2023/04/0008', 0, 0, '2023-04-10', 6, 1),
 (26, 'PWR/IT/2023/04/0009', 0, 0, '2023-04-13', 7, 1),
-(27, 'PWR/IT/2023/04/0010', 0, 0, '2023-04-13', 7, 1);
+(27, 'PWR/IT/2023/04/0010', 0, 0, '2023-04-13', 7, 1),
+(28, 'PWR/IT/2023/04/0011', 1000, 0, '2023-04-26', 6, 1);
 
 -- --------------------------------------------------------
 
@@ -351,7 +369,9 @@ INSERT INTO `pipeline_marketings` (`id`, `tanggal_dibuat`, `tanggal_survey`, `ta
 (13, '2023-04-13', '0000-00-00', '2023-04-18', 'Prepare', 6, 1, NULL),
 (14, '2023-04-13', '0000-00-00', '2023-04-12', 'Progress', 7, 1, NULL),
 (15, '2023-04-13', '0000-00-00', '2023-04-18', 'Order', 6, 1, NULL),
-(16, '2023-04-14', '0000-00-00', '2023-04-18', 'Installed', 6, 1, 24);
+(16, '2023-04-14', '0000-00-00', '2023-04-18', 'Installed', 6, 1, 24),
+(17, '2023-04-26', '2023-04-13', '2023-04-18', 'Prepare', 6, 1, NULL),
+(18, '2023-04-26', '2023-04-13', '2023-04-18', 'Installed', 6, 1, 25);
 
 -- --------------------------------------------------------
 
@@ -388,6 +408,7 @@ CREATE TABLE `request_orders` (
   `tanggal_po` date DEFAULT NULL,
   `file_po` varchar(45) DEFAULT NULL,
   `tanggal_dibuat` date DEFAULT current_timestamp(),
+  `tanggal_konfirmasi` date DEFAULT NULL,
   `detail_pelanggan_id` int(11) NOT NULL,
   `marketing_id` int(11) NOT NULL,
   `manager_id` int(11) DEFAULT NULL
@@ -397,18 +418,19 @@ CREATE TABLE `request_orders` (
 -- Dumping data for table `request_orders`
 --
 
-INSERT INTO `request_orders` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal_kirim`, `no_po`, `tanggal_po`, `file_po`, `tanggal_dibuat`, `detail_pelanggan_id`, `marketing_id`, `manager_id`) VALUES
-(2, 'RO/IT/2023/04/0001', 0, 0, '2023-04-05', '8249', '2023-04-12', 'RO_IT_2023_04_0001.pdf', '2023-04-08', 6, 1, 1),
-(3, 'RO/IT/2023/04/0002', 0, 0, '2023-04-06', '82493', '2023-04-12', NULL, '2023-04-08', 6, 1, 1),
-(4, 'RO/IT/2023/04/0003', 0, 0, '2023-04-05', '82493', '2023-04-12', NULL, '2023-04-08', 6, 1, NULL),
-(5, 'RO/IT/2023/04/0004', 0, 0, '2023-04-05', '82493', '2023-04-12', 'RO_IT_2023_04_0004.png', '2023-04-08', 6, 1, NULL),
-(6, 'RO/IT/2023/04/0005', 0, 0, '2023-04-06', '89483', '2023-04-03', 'RO_IT_2023_04_0005.pdf', '2023-04-08', 6, 1, NULL),
-(7, 'RO/IT/2023/04/0006', 0, 0, '2023-04-04', '', '0000-00-00', NULL, '2023-04-08', 6, 1, NULL),
-(8, 'RO/IT/2023/04/0007', 0, 0, '2023-04-12', '', '0000-00-00', NULL, '2023-04-08', 6, 1, NULL),
-(11, 'RO/IT/2023/04/0008', 0, 0, '2023-04-11', '123', '2023-04-03', 'RO_IT_2023_04_0008.pdf', '2023-04-12', 6, 1, NULL),
-(20, 'RO/IT/2023/04/0009', 0, 0, '2023-04-04', '23', '2023-04-09', 'RO_IT_2023_04_0009.pdf', '2023-04-12', 6, 1, NULL),
-(23, 'RO/IT/2023/04/0010', 0, 0, '2023-04-18', '345', '2023-04-27', 'RO_IT_2023_04_0010.pdf', '2023-04-13', 6, 1, NULL),
-(24, 'RO/IT/2023/04/0011', 13000, 15000, '2023-04-19', '1234', '2023-04-19', '', '2023-04-14', 6, 1, 1);
+INSERT INTO `request_orders` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal_kirim`, `no_po`, `tanggal_po`, `file_po`, `tanggal_dibuat`, `tanggal_konfirmasi`, `detail_pelanggan_id`, `marketing_id`, `manager_id`) VALUES
+(2, 'RO/IT/2023/04/0001', 5000, 0, '2023-04-05', '8249', '2023-04-12', 'RO_IT_2023_04_0001.pdf', '2023-04-08', '2023-04-26', 6, 1, 1),
+(3, 'RO/IT/2023/04/0002', 0, 0, '2023-04-06', '82493', '2023-04-12', NULL, '2023-04-08', NULL, 6, 1, 1),
+(4, 'RO/IT/2023/04/0003', 0, 0, '2023-04-05', '82493', '2023-04-12', NULL, '2023-04-08', NULL, 6, 1, NULL),
+(5, 'RO/IT/2023/04/0004', 0, 0, '2023-04-05', '82493', '2023-04-12', 'RO_IT_2023_04_0004.png', '2023-04-08', NULL, 6, 1, NULL),
+(6, 'RO/IT/2023/04/0005', 0, 0, '2023-04-06', '89483', '2023-04-03', 'RO_IT_2023_04_0005.pdf', '2023-04-08', NULL, 6, 1, NULL),
+(7, 'RO/IT/2023/04/0006', 0, 0, '2023-04-04', '', '0000-00-00', NULL, '2023-04-08', '2023-04-26', 6, 1, 1),
+(8, 'RO/IT/2023/04/0007', 0, 0, '2023-04-12', '', '0000-00-00', NULL, '2023-04-08', '2023-04-26', 6, 1, 1),
+(11, 'RO/IT/2023/04/0008', 0, 0, '2023-04-11', '123', '2023-04-03', 'RO_IT_2023_04_0008.pdf', '2023-04-12', NULL, 6, 1, NULL),
+(20, 'RO/IT/2023/04/0009', 0, 0, '2023-04-04', '23', '2023-04-09', 'RO_IT_2023_04_0009.pdf', '2023-04-12', NULL, 6, 1, NULL),
+(23, 'RO/IT/2023/04/0010', 0, 0, '2023-04-18', '345', '2023-04-27', 'RO_IT_2023_04_0010.pdf', '2023-04-13', NULL, 6, 1, NULL),
+(24, 'RO/IT/2023/04/0011', 13000, 15000, '2023-04-19', '1234', '2023-04-19', NULL, '2023-04-14', '2023-04-26', 6, 1, 1),
+(25, 'RO/IT/2023/04/0012', 50000, 10000, '2023-04-14', '17266', '2023-04-28', NULL, '2023-04-26', '2023-04-26', 6, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -501,7 +523,7 @@ CREATE TABLE `users` (
   `kode` varchar(45) NOT NULL,
   `username` varchar(45) NOT NULL,
   `nama` varchar(45) DEFAULT NULL,
-  `password` varchar(45) DEFAULT 'password',
+  `password` varchar(255) DEFAULT NULL,
   `aktif` tinyint(4) DEFAULT 1,
   `role_id` int(11) NOT NULL,
   `divisi_id` int(11) DEFAULT NULL,
@@ -513,11 +535,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `kode`, `username`, `nama`, `password`, `aktif`, `role_id`, `divisi_id`, `atasan_id`) VALUES
-(1, 'IT', 'superadmin', 'IT Superadmin', 'superadmin', 1, 1, NULL, NULL),
-(2, 'DUM', 'marketing', 'Marketing Dummy', 'marketing', 1, 3, 1, NULL),
-(5, 'coba', 'coba', 'coba', 'password', 0, 4, 1, 1),
-(6, 'HD1', 'halodummy', 'Halo Dummy', 'password', 1, 4, 1, 2),
-(7, 'HD2', 'haidommy', 'Hai Dommy', 'password', 0, 4, 1, 2);
+(1, 'IT', 'superadmin', 'IT Superadmin', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 1, 1, NULL, NULL),
+(2, 'DUM', 'marketing', 'Marketing Dummy', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 1, 3, 1, NULL),
+(5, 'coba', 'coba', 'coba', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 0, 4, 1, 1),
+(6, 'HD1', 'halodummy', 'Halo Dummy', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 1, 4, 1, 2),
+(7, 'HD2', 'haidommy', 'Hai Dommy', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 0, 4, 1, 2),
+(10, 'HB1', 'haloo', 'Haia Bass', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 1, 3, 1, 2);
 
 --
 -- Indexes for dumped tables
@@ -681,7 +704,7 @@ ALTER TABLE `barangs`
 -- AUTO_INCREMENT for table `detail_pelanggans`
 --
 ALTER TABLE `detail_pelanggans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `divisis`
@@ -705,13 +728,13 @@ ALTER TABLE `pelanggans`
 -- AUTO_INCREMENT for table `penawaran_barangs`
 --
 ALTER TABLE `penawaran_barangs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `pipeline_marketings`
 --
 ALTER TABLE `pipeline_marketings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `ppns`
@@ -723,7 +746,7 @@ ALTER TABLE `ppns`
 -- AUTO_INCREMENT for table `request_orders`
 --
 ALTER TABLE `request_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -747,7 +770,7 @@ ALTER TABLE `surat_jalans`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables
