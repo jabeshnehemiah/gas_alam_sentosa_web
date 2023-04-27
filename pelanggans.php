@@ -4,19 +4,14 @@
 <?php
 include './head.php';
 ?>
-<style>
-  #kode-input {
-    text-transform: uppercase;
-  }
-</style>
-
 <body>
   <?php include './navbar.php'; ?>
-  <div class="container py-4">
+  <div class="container py-2">
     <div class="alert-container"></div>
-    <div class="d-flex justify-content-between" id="heading"></div>
+    <h1 class="h1-responsive pb-2">PELANGGAN</h1>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>
   </div>
 </body>
 <script type="text/javascript">
@@ -79,27 +74,21 @@ include './head.php';
     },
   };
 
-  $(document).ready(function() {
-    loadPage();
+  $(document).ready(async()=> {
+    await loadPage();
 
     $('.alert').alert();
   });
 
   // Function to load page
-  const loadPage = () => {
+  const loadPage = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/pelanggan_get.php',
       success: (response) => {
         response = JSON.parse(response);
         let html;
-
-        // Add heading
-        $('#heading').html(`
-          <h1>PELANGGAN</h1>
-          <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-          `);
 
         if (response.data.length > 0) {
           // Initialize datatable
@@ -194,7 +183,7 @@ include './head.php';
             scrollCollapse: true,
             paging: true,
             fixedColumns: {
-              left: 2
+              left: $(window).width() >= 576 ? 2 : 0,
             }
           });
         } else {
@@ -368,7 +357,7 @@ include './head.php';
         data: formData,
         contentType: false,
         processData: false,
-        success: response => {
+        success: async response => {
           console.log(response)
           response = JSON.parse(response);
           $('#modalTambah').modal('hide');
@@ -378,7 +367,7 @@ include './head.php';
           } else {
             showAlert('danger', response.message);
           }
-          loadPage();
+          await loadPage();
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);
@@ -553,7 +542,7 @@ include './head.php';
               data: formData,
               contentType: false,
               processData: false,
-              success: response => {
+              success: async response => {
                 console.log(response)
                 response = JSON.parse(response);
                 $('#modalUbah').modal('hide');
@@ -563,7 +552,7 @@ include './head.php';
                 } else {
                   showAlert('danger', response.message);
                 }
-                loadPage();
+                await loadPage();
               },
               error: (jqXHR, textStatus, errorThrown) => {
                 console.log(textStatus, errorThrown);

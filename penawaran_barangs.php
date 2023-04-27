@@ -12,11 +12,12 @@ include './head.php';
 
 <body>
   <?php include './navbar.php'; ?>
-  <div class="container py-4">
+  <div class="container py-2">
     <div class="alert-container"></div>
-    <div class="d-flex justify-content-between" id="heading"></div>
+    <h1 class="h1-responsive pb-2">PENAWARAN BARANG</h1>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>
     <div class="print-container">
       <div id="print" class="p-5">
         <div class="d-flex justify-content-between pb-3">
@@ -131,18 +132,18 @@ include './head.php';
 
   let ppn = {};
 
-  $(document).ready(function() {
-    loadPelanggans();
-    loadPpn();
+  $(document).ready(async()=> {
+    await loadPelanggans();
+    await loadPpn();
 
-    loadPage();
+    await loadPage();
 
     $('.alert').alert();
   });
 
-  const loadPelanggans = () => {
+  const loadPelanggans = async() => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/pelanggan_get.php',
       success: response => {
@@ -157,9 +158,9 @@ include './head.php';
     });
   }
 
-  const loadBarangs = (id) => {
+  const loadBarangs = async(id) => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
       data: {
@@ -177,9 +178,9 @@ include './head.php';
     });
   }
 
-  const loadPpn = () => {
+  const loadPpn = async() => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/ppn_get.php',
       success: response => {
@@ -195,20 +196,14 @@ include './head.php';
   }
 
   // Function to load page
-  const loadPage = () => {
+  const loadPage = async() => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/penawaran_barang_get.php',
       success: (response) => {
         response = JSON.parse(response);
         let html;
-
-        // Add heading
-        $('#heading').html(`
-          <h1>PENAWARAN BARANG</h1>
-          <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-          `);
 
         if (response.data.length > 0) {
           // Initialize datatable
@@ -303,7 +298,7 @@ include './head.php';
             scrollCollapse: true,
             paging: true,
             fixedColumns: {
-              left: 2
+              left: $(window).width() >= 576 ? 2 : 0,
             }
           });
         } else {
@@ -509,10 +504,10 @@ include './head.php';
       selDetail.removeAttr('disabled');
     });
 
-    $('#detail_pelanggan_id-input').change(() => {
+    $('#detail_pelanggan_id-input').change(async () => {
       const id = $('#detail_pelanggan_id-input').find(':selected').val();
 
-      loadBarangs(id);
+      await loadBarangs(id);
       $('#tbBarang').empty();
     });
 
@@ -547,7 +542,7 @@ include './head.php';
           data: formData,
           contentType: false,
           processData: false,
-          success: response => {
+          success: async response => {
             response = JSON.parse(response);
             $('#modalTambah').modal('hide');
             $(".modal-backdrop").remove();
@@ -556,7 +551,7 @@ include './head.php';
             } else {
               showAlert('danger', response.message);
             }
-            loadPage();
+            await loadPage();
           },
           error: (jqXHR, textStatus, errorThrown) => {
             console.log(textStatus, errorThrown);
@@ -629,9 +624,9 @@ include './head.php';
       data: {
         'kode': kode,
       },
-      success: response => {
+      success: async response => {
         response = JSON.parse(response);
-        loadBarangs(response.data.detail_pelanggan_id);
+        await loadBarangs(response.data.detail_pelanggan_id);
         if (response.success) {
           $.ajax({
             type: 'POST',
@@ -906,7 +901,7 @@ include './head.php';
                     data: formData,
                     contentType: false,
                     processData: false,
-                    success: response => {
+                    success:async response => {
                       console.log(response)
                       response = JSON.parse(response);
                       $('#modalUbah').modal('hide');
@@ -916,7 +911,7 @@ include './head.php';
                       } else {
                         showAlert('danger', response.message);
                       }
-                      loadPage();
+                      await loadPage();
                     },
                     error: (jqXHR, textStatus, errorThrown) => {
                       console.log(textStatus, errorThrown);

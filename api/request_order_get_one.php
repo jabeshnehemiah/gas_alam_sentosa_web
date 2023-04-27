@@ -32,13 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         SELECT dsj.barang_id, SUM(dsj.kuantitas) kuantitas 
         FROM surat_jalans sj 
         INNER JOIN detail_surat_jalans dsj ON sj.id = dsj.surat_jalan_id 
-        WHERE sj.request_order_id = 2 
+        WHERE sj.request_order_id = ?
         GROUP BY dsj.barang_id
       ) t ON dro.barang_id = t.barang_id
-      WHERE ro.id = ?;";
+      WHERE ro.id = ?";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param('s', $_POST['id']);
+    $stmt->bind_param('ss', $_POST['id'], $_POST['id']);
     $stmt->execute();
     $res = $stmt->get_result();
   }

@@ -4,33 +4,62 @@
   </button>
   <div class="collapse navbar-collapse" id="navbar">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="./index.php">Dashboard
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="./settings.php">Settings
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="./transactions.php">Transactions
-        </a>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" id="dropdown-master" data-toggle="dropdown"
-          aria-haspopup="true" aria-expanded="false">
-          Master
-        </a>
-        <div class="dropdown-menu dropdown-menu-right dropdown-default"
-          aria-labelledby="dropdown-master">
-          <a class="dropdown-item" href="./users.php">User</a>
-          <a class="dropdown-item" href="./pelanggans.php">Pelanggan</a>
-          <a class="dropdown-item" href="./barangs.php">Barang</a>
-          <a class="dropdown-item" href="./satuans.php">Satuan</a>
-        </div>
-      </li>
-    </ul>
-    <a class="btn btn-danger btn-md my-2 my-sm-0" id="keluar-button">Keluar</a>
+      <?php
+      $navs = [];
+      foreach ($links as $key => $link) {
+        if (
+          isset($link['isNav'])
+          && $_SESSION['role'] <= $link['minRole']
+          && ((in_array($_SESSION['divisi'], $link['divisi'])
+            || is_null($_SESSION['divisi'])))
+        ) {
+          if (isset($link['dropdown'])) {
+            $navs[$link['dropdown']][$key] = $link;
+          } else {
+            $navs[$key] = $link;
+          }
+        }
+      }
+      foreach ($navs as $key => $nav) {
+        if (is_array(current($nav))) {
+      ?>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" id="dropdown-<?php echo $key ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <?php echo $key; ?>
+            </a>
+            <div class="dropdown-menu dropdown-menu-left dropdown-default w-100" aria-labelledby="dropdown-<?php echo $key; ?>">
+              <?php
+              foreach ($nav as $key => $item) {
+              ?>
+                <a class="dropdown-item" href="./<?php echo $key; ?>"><?php echo $item['text']; ?></a>
+              <?php
+              }
+              ?>
+            </div>
+          </li>
+        <?php
+        } else {
+        ?>
+          <li class="nav-item">
+            <a class="nav-link" href="./<?php echo $key; ?>"><?php echo $nav['text']; ?></a>
+          </li>
+      <?php
+        }
+      }
+      ?>
+  </ul>
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" id="dropdown-profile" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-user"></i>
+        <?php echo $_SESSION['username'] ?>
+      </a>
+      <div class="dropdown-menu dropdown-menu-right dropdown-default w-100" aria-labelledby="dropdown-profile">
+        <a class="dropdown-item" href="./change_password.php">Ubah Password</a>
+        <a class="dropdown-item red-text" id="keluar-button">Keluar</a>
+      </div>
+    </li>
+  </ul>
   </div>
 </nav>
 

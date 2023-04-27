@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $passwordLama = $_POST['passwordLama'];
   $passwordBaru = $_POST['passwordBaru'];
 
-  $sql = "SELECT password FROM users WHERE id = ".$_SESSION['id'];
+  $sql = "SELECT password FROM users WHERE id = " . $_SESSION['id'];
   $stmt = $conn->prepare($sql);
   $stmt->execute();
   $res = $stmt->get_result();
@@ -19,13 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if (isset($passwordDB)) {
     if (password_verify($passwordLama, $passwordDB)) {
-      $passwordBaru = password_hash($passwordBaru,PASSWORD_DEFAULT);
-      $sql = "UPDATE users SET password = ?";
-      
+      $passwordBaru = password_hash($passwordBaru, PASSWORD_DEFAULT);
+      $sql = "UPDATE users SET password = ? WHERE id = " . $_SESSION['id'];
+
       $stmt = $conn->prepare($sql);
       $stmt->bind_param('s', $passwordBaru);
       $stmt->execute();
-    
+
       if ($stmt->affected_rows > 0) {
         $response = ['success' => true, 'message' => "Berhasil mengubah password."];
       } else {

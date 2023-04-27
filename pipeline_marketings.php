@@ -12,12 +12,9 @@ include './head.php';
 
 <body>
   <?php include './navbar.php'; ?>
-  <div class="container py-4">
+  <div class="container py-2">
     <div class="alert-container"></div>
-    <div class="d-flex justify-content-between" id="heading">
-      <h1>PIPELINE MARKETING</h1>
-      <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-    </div>
+    <h1 class="h1-responsive pb-2">PIPELINE HISTORY</h1>
     <div class="param-container py-3">
       <div class="py-2">
         <h6>tanggal awal</h6>
@@ -35,6 +32,7 @@ include './head.php';
     </div>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>
   </div>
 </body>
 <script type="text/javascript">
@@ -70,11 +68,11 @@ include './head.php';
 
   const tanggal = '<?php echo date('Y-m-d'); ?>'
 
-  $(document).ready(function() {
-    loadPelanggans();
+  $(document).ready(async()=> {
+    await loadPelanggans();
 
-    $('.param').change(() => {
-      loadPage();
+    $('.param').change(async () => {
+      await loadPage();
     });
 
     $('#param-pelanggan').select2({
@@ -86,12 +84,12 @@ include './head.php';
     $('.alert').alert();
   });
 
-  const loadPelanggans = () => {
+  const loadPelanggans = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/pelanggan_get.php',
-      success: response => {
+      success: async response => {
         response = JSON.parse(response);
         if (response.success) {
           formInputs['pelanggan_id']['data'] = response.data;
@@ -101,7 +99,7 @@ include './head.php';
           $('#param-pelanggan').append(`<option value="${datum.id}" ${first?'selected':''}>${datum.badan_usaha} ${datum.nama_perusahaan} - ${datum.kota}</option>}`);
           first = false;
         });
-        loadPage();
+        await loadPage();
       },
       error: (jqXHR, textStatus, errorThrown) => {
         console.log(textStatus, errorThrown);
@@ -109,9 +107,9 @@ include './head.php';
     });
   }
 
-  const loadBarangs = (id) => {
+  const loadBarangs = async (id) => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
       data: {
@@ -130,9 +128,9 @@ include './head.php';
   }
 
   // Function to load page
-  const loadPage = () => {
+  const loadPage = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/pipeline_marketing_get.php',
       data: {
@@ -416,9 +414,9 @@ include './head.php';
       selDetail.removeAttr('disabled');
     });
 
-    $('#detail_pelanggan_id-input').change(() => {
+    $('#detail_pelanggan_id-input').change(async () => {
       let detail = $('#detail_pelanggan_id-input').find(':selected').val();
-      loadBarangs(detail);
+      await loadBarangs(detail);
       $.ajax({
         type: 'POST',
         url: './api/pipeline_marketing_get_one.php',
@@ -502,7 +500,7 @@ include './head.php';
         data: formData,
         contentType: false,
         processData: false,
-        success: response => {
+        success: async response => {
           console.log(response);
           response = JSON.parse(response);
           $('#modalTambah').modal('hide');
@@ -512,7 +510,7 @@ include './head.php';
           } else {
             showAlert('danger', response.message);
           }
-          loadPage();
+          await loadPage();
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);
@@ -563,10 +561,10 @@ include './head.php';
       data: {
         'id': id,
       },
-      success: response => {
+      success: async response => {
         response = JSON.parse(response);
         if (response.success) {
-          loadBarangs(response.data.detail_pelanggan_id)
+          await loadBarangs(response.data.detail_pelanggan_id)
           $.ajax({
             type: 'POST',
             url: './api/detail_pelanggan_get.php',
@@ -798,7 +796,7 @@ include './head.php';
                   data: formData,
                   contentType: false,
                   processData: false,
-                  success: response => {
+                  success: async response => {
                     console.log(response)
                     response = JSON.parse(response);
                     $('#modalUbah').modal('hide');
@@ -808,7 +806,7 @@ include './head.php';
                     } else {
                       showAlert('danger', response.message);
                     }
-                    loadPage();
+                    await loadPage();
                   },
                   error: (jqXHR, textStatus, errorThrown) => {
                     console.log(textStatus, errorThrown);

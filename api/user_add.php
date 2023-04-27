@@ -9,6 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   try {
     $_POST['kode'] = generateKode('users', 0, $conn, null, null, $_POST['nama']);
     $_POST['password'] = password_hash('password', PASSWORD_DEFAULT);
+    if ($_POST['atasan_id'] == '') {
+      unset($_POST['atasan_id']);
+    }
 
     // Get keys
     $keys = array_keys($_POST);
@@ -41,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $response = ['success' => false, 'message' => "Gagal menambahkan data user."];
     }
   } catch (Exception $e) {
-    $response = ['success' => false, 'message' => "Username '" . $_POST['username'] . "' sudah terpakai."];
+    $response = ['success' => false, 'message' => $e->getMessage()];
   }
 
   echo json_encode($response);

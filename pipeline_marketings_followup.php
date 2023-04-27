@@ -12,14 +12,12 @@ include './head.php';
 
 <body>
   <?php include './navbar.php'; ?>
-  <div class="container py-4">
+  <div class="container py-2">
     <div class="alert-container"></div>
-    <div class="d-flex justify-content-between" id="heading">
-      <h1>PIPELINE MARKETING</h1>
-      <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-    </div>
+    <h1 class="h1-responsive pb-2">PIPELINE FOLLOW UP</h1>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>
   </div>
 </body>
 <script type="text/javascript">
@@ -55,17 +53,17 @@ include './head.php';
 
   const tanggal = '<?php echo date('Y-m-d'); ?>'
 
-  $(document).ready(function() {
-    loadPelanggans();
+  $(document).ready(async () => {
+    await loadPelanggans();
 
-    loadPage();
+    await loadPage();
 
     $('.alert').alert();
   });
 
-  const loadPelanggans = () => {
+  const loadPelanggans = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/pelanggan_get.php',
       success: response => {
@@ -80,13 +78,13 @@ include './head.php';
     });
   }
 
-  const loadBarangs = (id) => {
+  const loadBarangs = async (id) => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
-      data:{
-        'detail_pelanggan_id':id
+      data: {
+        'detail_pelanggan_id': id
       },
       success: response => {
         response = JSON.parse(response);
@@ -101,9 +99,9 @@ include './head.php';
   }
 
   // Function to load page
-  const loadPage = () => {
+  const loadPage = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/pipeline_marketing_get.php',
       success: (response) => {
@@ -383,9 +381,9 @@ include './head.php';
       selDetail.removeAttr('disabled');
     });
 
-    $('#detail_pelanggan_id-input').change(() => {
+    $('#detail_pelanggan_id-input').change(async () => {
       let detail = $('#detail_pelanggan_id-input').find(':selected').val();
-      loadBarangs(detail);
+      await loadBarangs(detail);
       $.ajax({
         type: 'POST',
         url: './api/pipeline_marketing_get_one.php',
@@ -469,7 +467,7 @@ include './head.php';
         data: formData,
         contentType: false,
         processData: false,
-        success: response => {
+        success: async response => {
           console.log(response);
           response = JSON.parse(response);
           $('#modalTambah').modal('hide');
@@ -479,7 +477,7 @@ include './head.php';
           } else {
             showAlert('danger', response.message);
           }
-          loadPage();
+          await loadPage();
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);
@@ -530,9 +528,9 @@ include './head.php';
       data: {
         'id': id,
       },
-      success: response => {
+      success: async response => {
         response = JSON.parse(response);
-        loadBarangs(response.data.detail_pelanggan_id);
+        await loadBarangs(response.data.detail_pelanggan_id);
         if (response.success) {
           $.ajax({
             type: 'POST',
@@ -765,7 +763,7 @@ include './head.php';
                   data: formData,
                   contentType: false,
                   processData: false,
-                  success: response => {
+                  success: async response => {
                     console.log(response)
                     response = JSON.parse(response);
                     $('#modalUbah').modal('hide');
@@ -775,7 +773,7 @@ include './head.php';
                     } else {
                       showAlert('danger', response.message);
                     }
-                    loadPage();
+                    await loadPage();
                   },
                   error: (jqXHR, textStatus, errorThrown) => {
                     console.log(textStatus, errorThrown);

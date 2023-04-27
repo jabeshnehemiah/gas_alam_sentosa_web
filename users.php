@@ -10,11 +10,12 @@
 
 <body>
   <?php include './navbar.php'; ?>
-  <div class="container py-4">
+  <div class="container py-2">
     <div class="alert-container"></div>
-    <div class="d-flex justify-content-between" id="heading"></div>
+    <h1 class="h1-responsive pb-2">USER</h1>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>
   </div>
 </body>
 <script type="text/javascript">
@@ -40,25 +41,24 @@
     'atasan_id': {
       'type': 'select',
       'data': [],
-      'required': true,
       'disabled': true,
     },
   };
 
   let users = [];
 
-  $(document).ready(function() {
-    loadRoles();
-    loadDivisis();
+  $(document).ready(async () => {
+    await loadRoles();
+    await loadDivisis();
 
-    loadPage();
+    await loadPage();
 
     $('.alert').alert();
   });
 
-  const loadRoles = () => {
+  const loadRoles = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/role_get.php',
       success: response => {
@@ -73,9 +73,9 @@
     });
   }
 
-  const loadDivisis = () => {
+  const loadDivisis = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/divisi_get.php',
       success: response => {
@@ -91,20 +91,14 @@
   }
 
   // Function to load page
-  const loadPage = () => {
+  const loadPage = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/user_get.php',
       success: (response) => {
         response = JSON.parse(response);
         let html;
-
-        // Add heading
-        $('#heading').html(`
-          <h1>USER</h1>
-          <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-          `);
 
         if (response.data.length > 0) {
           // Initialize datatable
@@ -381,7 +375,7 @@
         data: formData,
         contentType: false,
         processData: false,
-        success: response => {
+        success: async response => {
           console.log(response);
           response = JSON.parse(response);
           $('#modalTambah').modal('hide');
@@ -391,7 +385,7 @@
           } else {
             showAlert('danger', response.message);
           }
-          loadPage();
+          await loadPage();
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);
@@ -410,7 +404,6 @@
       },
       success: response => {
         response = JSON.parse(response);
-
         $.ajax({
           type: 'POST',
           url: './api/user_get.php',
@@ -546,7 +539,7 @@
                   data: formData,
                   contentType: false,
                   processData: false,
-                  success: response => {
+                  success: async response => {
                     console.log(response)
                     response = JSON.parse(response);
                     $('#modalUbah').modal('hide');
@@ -556,7 +549,7 @@
                     } else {
                       showAlert('danger', response.message);
                     }
-                    loadPage();
+                    await loadPage();
                   },
                   error: (jqXHR, textStatus, errorThrown) => {
                     console.log(textStatus, errorThrown);
@@ -686,7 +679,7 @@
               data: formData,
               contentType: false,
               processData: false,
-              success: response => {
+              success: async response => {
                 console.log(response)
                 response = JSON.parse(response);
                 $('#modalHapus').modal('hide');
@@ -696,7 +689,7 @@
                 } else {
                   showAlert('danger', response.message);
                 }
-                loadPage();
+                await loadPage();
               },
               error: (jqXHR, textStatus, errorThrown) => {
                 console.log(textStatus, errorThrown);
@@ -752,7 +745,7 @@
         type: 'POST',
         url: './api/user_deactivate.php',
         data: formData,
-        success: response => {
+        success: async response => {
           response = JSON.parse(response);
           $('#modalHapus').modal('hide');
           $(".modal-backdrop").remove();
@@ -761,7 +754,7 @@
           } else {
             showAlert('danger', response.message);
           }
-          loadPage();
+          await loadPage();
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);

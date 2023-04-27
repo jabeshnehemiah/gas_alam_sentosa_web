@@ -14,9 +14,9 @@ if (isset($_GET['kode'])) {
 
   <body>
     <?php include './navbar.php'; ?>
-    <div class="container py-4">
+    <div id="container" class="container py-3">
       <div class="alert-container"></div>
-      <div class="d-flex justify-content-between" id="heading"></div>
+      <h1 class="h1-responsive pb-2" id="heading">DETAIL PELANGGAN</h1>
       <div class="table-container"></div>
       <div class="modal-container"></div>
     </div>
@@ -73,17 +73,17 @@ if (isset($_GET['kode'])) {
     };
     let pelanggan_id;
 
-    $(document).ready(function() {
-      loadBarangs();
+    $(document).ready(async () => {
+      await loadBarangs();
 
-      loadPage();
+      await loadPage();
 
       $('.alert').alert();
     });
 
-    const loadBarangs = () => {
+    const loadBarangs = async () => {
       // Send the AJAX request
-      $.ajax({
+      await $.ajax({
         type: 'POST',
         url: './api/barang_get.php',
         data: {
@@ -102,9 +102,9 @@ if (isset($_GET['kode'])) {
     }
 
     // Function to load page
-    const loadPage = () => {
+    const loadPage = async () => {
       // Send the AJAX request
-      $.ajax({
+      await $.ajax({
         type: 'POST',
         url: './api/detail_pelanggan_get.php',
         data: {
@@ -114,15 +114,13 @@ if (isset($_GET['kode'])) {
           console.log(response)
           response = JSON.parse(response);
           pelanggan_id = response.id;
+          if (pelanggan_id != 0) {
+            $('#container').append(`<button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>`);
+          }
           let html;
 
-          // Add heading
-          $('#heading').html(`
-          <h1><?php echo $kode; ?></h1>
-          <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-          `);
-
           if (response.data.length > 0) {
+            $('#heading').text(response.data[0].pelanggan)
             // Initialize datatable
             html = `
           <div class="container-fluid">
@@ -144,7 +142,7 @@ if (isset($_GET['kode'])) {
 
             // Set head, foot
             keys.forEach(key => {
-              if (key != 'id' && key != 'pelanggan_id') {
+              if (key != 'id' && key != 'pelanggan_id' && key != 'pelanggan') {
                 head += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
                 foot += `<th>${key.replace(/_/g,' ').toUpperCase()}</th>`;
               }
@@ -167,7 +165,7 @@ if (isset($_GET['kode'])) {
               // Set row data
               let row = `<tr>`;
               keys.forEach(key => {
-                if (key != 'id' && key != 'pelanggan_id') {
+                if (key != 'id' && key != 'pelanggan_id' && key != 'pelanggan') {
                   if (datum[key] != null) {
                     row += `<td>${datum[key]}</td>`;
                   } else {
@@ -214,7 +212,7 @@ if (isset($_GET['kode'])) {
               scrollCollapse: true,
               paging: true,
               fixedColumns: {
-                left: 2
+                left: $(window).width() >= 576 ? 2 : 0,
               }
             });
           } else {
@@ -402,7 +400,7 @@ if (isset($_GET['kode'])) {
           data: formData,
           contentType: false,
           processData: false,
-          success: response => {
+          success: async response => {
             console.log(response);
             response = JSON.parse(response);
             $('#modalTambah').modal('hide');
@@ -412,7 +410,7 @@ if (isset($_GET['kode'])) {
             } else {
               showAlert('danger', response.message);
             }
-            loadPage();
+            await loadPage();
           },
           error: (jqXHR, textStatus, errorThrown) => {
             console.log(textStatus, errorThrown);
@@ -658,8 +656,8 @@ if (isset($_GET['kode'])) {
                 url: './api/detail_pelanggan_edit.php',
                 data: formData,
                 contentType: false,
-                  processData: false,
-                success: response => {
+                processData: false,
+                success: async response => {
                   console.log(response)
                   response = JSON.parse(response);
                   $('#modalUbah').modal('hide');
@@ -669,7 +667,7 @@ if (isset($_GET['kode'])) {
                   } else {
                     showAlert('danger', response.message);
                   }
-                  loadPage();
+                  await loadPage();
                 },
                 error: (jqXHR, textStatus, errorThrown) => {
                   console.log(textStatus, errorThrown);

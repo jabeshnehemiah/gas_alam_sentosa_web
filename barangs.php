@@ -5,11 +5,12 @@
 
 <body>
   <?php include './navbar.php'; ?>
-  <div class="container py-4">
+  <div class="container py-3">
     <div class="alert-container"></div>
-    <div class="d-flex justify-content-between" id="heading"></div>
+    <h1 class="h1-responsive pb-2">BARANG</h1>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>
   </div>
 </body>
 <script type="text/javascript">
@@ -51,21 +52,21 @@
     }
   };
   const relations = ['kategori_barangs', 'satuans'];
-  $(document).ready(function() {
-    relations.forEach(table => {
-      loadSelect(table);
+  $(document).ready(async () => {
+    relations.forEach(async table => {
+      await loadSelect(table);
     });
 
     bsCustomFileInput.init();
 
-    loadPage();
+    await loadPage();
 
     $('.alert').alert();
   });
 
-  const loadSelect = table => {
+  const loadSelect = async table => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/umum_get.php',
       data: {
@@ -85,21 +86,15 @@
 
 
   // Function to load page
-  const loadPage = () => {
+  const loadPage = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
       success: (response) => {
         console.log(response)
         response = JSON.parse(response);
         let html;
-
-        // Add heading
-        $('#heading').html(`
-          <h1>BARANG</h1>
-          <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-          `);
 
         if (response.data.length > 0) {
           // Initialize datatable
@@ -165,7 +160,7 @@
               <button type="button" class="btn btn-danger btn-sm m-0 px-3 delete-button" onClick="deleteModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-trash-alt"></i></button>
             `;
             }
-            row+='</td>';
+            row += '</td>';
             row += `</tr>`;
             body += row;
           });
@@ -347,7 +342,7 @@
         data: formData,
         contentType: false,
         processData: false,
-        success: response => {
+        success: async response => {
           console.log(response);
           response = JSON.parse(response);
           $('#modalTambah').modal('hide');
@@ -357,7 +352,7 @@
           } else {
             showAlert('danger', response.message);
           }
-          loadPage();
+          await loadPage();
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);
@@ -510,7 +505,7 @@
               data: formData,
               contentType: false,
               processData: false,
-              success: response => {
+              success: async response => {
                 response = JSON.parse(response);
                 $('#modalUbah').modal('hide');
                 $(".modal-backdrop").remove();
@@ -519,7 +514,7 @@
                 } else {
                   showAlert('danger', response.message);
                 }
-                loadPage();
+                await loadPage();
               },
               error: (jqXHR, textStatus, errorThrown) => {
                 console.log(textStatus, errorThrown);
@@ -602,7 +597,7 @@
         type: 'POST',
         url: './api/barang_delete_file.php',
         data: formData,
-        success: response => {
+        success: async response => {
           response = JSON.parse(response);
           $('#modalHapus').modal('hide');
           $(".modal-backdrop").remove();
@@ -611,7 +606,7 @@
           } else {
             showAlert('danger', response.message);
           }
-          loadPage();
+          await loadPage();
         },
         error: (jqXHR, textStatus, errorThrown) => {
           console.log(textStatus, errorThrown);

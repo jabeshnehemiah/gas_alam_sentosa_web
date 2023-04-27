@@ -7,11 +7,12 @@ include './head.php';
 
 <body>
   <?php include './navbar.php'; ?>
-  <div class="container py-4">
+  <div class="container py-2">
     <div class="alert-container"></div>
-    <div class="d-flex justify-content-between" id="heading"></div>
+    <h1 class="h1-responsive pb-2">SURAT JALAN</h1>
     <div class="table-container"></div>
     <div class="modal-container"></div>
+    <button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>
     <div class="print-container">
       <div id="print" class="p-5">
         <div class="d-flex justify-content-between pb-3">
@@ -102,6 +103,7 @@ include './head.php';
     },
     'detail_surat_jalans': {
       'type': 'detail_surat_jalans',
+      'data': [],
       'required': true
     },
     'diskon': {
@@ -119,21 +121,20 @@ include './head.php';
     },
   };
 
-  $(document).ready(function() {
-    loadRequests();
-    loadBarangs();
-    loadPpn();
+  let ppn = 0;
 
-    loadPage();
+  $(document).ready(async () => {
+    await loadRequests();
+    await loadPpn();
+
+    await loadPage();
 
     $('.alert').alert();
   });
 
-  let ppn = {};
-
-  const loadRequests = () => {
+  const loadRequests = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/request_order_get.php',
       data: {
@@ -151,13 +152,13 @@ include './head.php';
     });
   }
 
-  const loadBarangs = () => {
+  const loadBarangs = async (id) => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/barang_get.php',
       data: {
-        'alur': 'Jual'
+        'detail_pelanggan_id': id
       },
       success: response => {
         response = JSON.parse(response);
@@ -171,9 +172,9 @@ include './head.php';
     });
   }
 
-  const loadPpn = () => {
+  const loadPpn = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/ppn_get.php',
       success: response => {
@@ -189,20 +190,14 @@ include './head.php';
   }
 
   // Function to load page
-  const loadPage = () => {
+  const loadPage = async () => {
     // Send the AJAX request
-    $.ajax({
+    await $.ajax({
       type: 'POST',
       url: './api/surat_jalan_get.php',
       success: (response) => {
         response = JSON.parse(response);
         let html;
-
-        // Add heading
-        $('#heading').html(`
-          <h1>SURAT JALAN</h1>
-          <button type="button" class="btn btn-primary" onClick="addModal()"><i class="fas fa-plus mr-2"></i>Tambah</button>
-          `);
 
         if (response.data.length > 0) {
           // Initialize datatable
@@ -297,7 +292,7 @@ include './head.php';
             scrollCollapse: true,
             paging: true,
             fixedColumns: {
-              left: 2,
+              left: $(window).width() >= 576 ? 2 : 0,
             }
           });
         } else {
@@ -398,7 +393,6 @@ include './head.php';
               <thead>
                 <tr>
                   <th class="th-lg">Barang</th>
-                  <th class="th-lg">Harga Beli</th>
                   <th class="th-lg">Harga Jual</th>
                   <th>Kuantitas</th>
                   <th>PPN</th>
@@ -483,12 +477,10 @@ include './head.php';
         data: {
           'id': order,
         },
-        success: response => {
-          console.log(response);
+        success: async response => {
           response = JSON.parse(response);
 
-
-
+          await loadBarangs(response.data.detail_pelanggan_id);
           for (const key in formInputs) {
             if (key == 'detail_surat_jalans') {
               $('#tbBarang').html('');
@@ -501,13 +493,17 @@ include './head.php';
                           <option></option>
                     `;
                   formInputs['detail_surat_jalans']['data'].forEach(datum => {
+                    console.log()
                     table += `<option value="${datum.id}" ${datum.id==barang.barang_id?'selected':''}>${datum.nama}</option>`;
                   })
                   table += `
                         </select>
                       </td>
-                      <td><input type="number" id="harga${counter}" class="form-control validate" value="${barang.harga_beli}" disabled></td>
-                      <td><input type="number" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
+                      <td>
+                        <input type="number" id="harga-disabled${counter}" class="form-control validate" value="${barang.harga_jual}" disabled>
+                        <input type="number" id="harga-jual${counter}" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" hidden required>
+                        <input type="number" id="harga-beli${counter}" name="detail_surat_jalans[${counter}][harga_beli]" class="form-control validate" value="${barang.harga_beli}" hidden required>
+                      </td>
                       <td><input type="number" name="detail_surat_jalans[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
                       <td>
                         <div class="custom-control custom-checkbox">
@@ -570,7 +566,7 @@ include './head.php';
           data: formData,
           contentType: false,
           processData: false,
-          success: response => {
+          success: async response => {
             console.log(response);
             response = JSON.parse(response);
             $('#modalTambah').modal('hide');
@@ -580,7 +576,7 @@ include './head.php';
             } else {
               showAlert('danger', response.message);
             }
-            loadPage();
+            await loadPage();
           },
           error: (jqXHR, textStatus, errorThrown) => {
             console.log(textStatus, errorThrown);
@@ -604,8 +600,11 @@ include './head.php';
     table += `
           </select>
         </td>
-        <td><input type="number" id="harga${counter}" class="form-control validate" disabled></td>
-        <td><input type="number" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" required></td>
+        <td>
+          <input type="number" id="harga-disabled${counter}" class="form-control validate" disabled>
+          <input type="number" id="harga-jual${counter}" name="detail_penawaran_barangs[${counter}][harga_jual]" class="form-control validate" hidden required>
+          <input type="number" id="harga-beli${counter}" name="detail_penawaran_barangs[${counter}][harga_beli]" class="form-control validate" hidden required>
+        </td>
         <td><input type="number" name="detail_surat_jalans[${counter}][kuantitas]" class="form-control validate" required></td>
         <td>
           <div class="custom-control custom-checkbox">
@@ -636,7 +635,9 @@ include './head.php';
     const barang = formInputs['detail_surat_jalans']['data'].find(obj => {
       return obj.id == $(`#barang${id} option:selected`).val()
     })
-    $(`#harga${id}`).val(barang.harga_beli)
+    $(`#harga-disabled${id}`).val(barang.harga_jual);
+    $(`#harga-jual${id}`).val(barang.harga_jual);
+    $(`#harga-beli${id}`).val(barang.harga_beli);
   }
 
   const editModal = (kode) => {
@@ -647,9 +648,9 @@ include './head.php';
       data: {
         'kode': kode,
       },
-      success: response => {
+      success: async response => {
         response = JSON.parse(response);
-        console.log(response)
+        await loadBarangs(response.data.detail_pelanggan_id)
         if (response.success) {
           let modalEdit = `
           <div class="modal fade" id="modalUbah" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalUbahTitle" aria-hidden="true">
@@ -703,7 +704,6 @@ include './head.php';
                         <thead>
                           <tr>
                             <th class="th-lg">Barang</th>
-                            <th class="th-lg">Harga Beli</th>
                             <th class="th-lg">Harga Jual</th>
                             <th>Kuantitas</th>
                             <th>PPN</th>
@@ -725,8 +725,11 @@ include './head.php';
                 table += `
                         </select>
                       </td>
-                      <td><input type="number" id="harga${counter}" class="form-control validate" value="${barang.harga_beli}" disabled></td>
-                      <td><input type="number" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" required></td>
+                      <td>
+                        <input type="number" id="harga-disabled${counter}" class="form-control validate" value="${barang.harga_jual}" disabled>
+                        <input type="number" id="harga-jual${counter}" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" value="${barang.harga_jual}" hidden required>
+                        <input type="number" id="harga-beli${counter}" name="detail_surat_jalans[${counter}][harga_beli]" class="form-control validate" value="${barang.harga_beli}" hidden required>
+                      </td>
                       <td><input type="number" name="detail_surat_jalans[${counter}][kuantitas]" class="form-control validate" value="${barang.kuantitas}" required></td>
                       <td>
                         <div class="custom-control custom-checkbox">
@@ -869,7 +872,7 @@ include './head.php';
                 data: formData,
                 contentType: false,
                 processData: false,
-                success: response => {
+                success: async response => {
                   console.log(response)
                   response = JSON.parse(response);
                   $('#modalUbah').modal('hide');
@@ -879,7 +882,7 @@ include './head.php';
                   } else {
                     showAlert('danger', response.message);
                   }
-                  loadPage();
+                  await loadPage();
                 },
                 error: (jqXHR, textStatus, errorThrown) => {
                   console.log(textStatus, errorThrown);

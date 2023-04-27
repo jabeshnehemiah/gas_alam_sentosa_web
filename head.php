@@ -61,5 +61,16 @@
     #print td {
       border: 1px solid black !important;
     }
+
+    .select2 {
+      width: 100% !important;
+    }
+
+    .fab{
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      border-radius: 50%;
+    }
   </style>
 </head>

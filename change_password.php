@@ -7,9 +7,9 @@ include './head.php';
 
 <body>
   <?php include './navbar.php'; ?>
-  <div class="container py-4">
+  <div class="container py-2">
     <div class="alert-container"></div>
-    <h1 class="h1-responsive">UBAH PASSWORD</h1>
+    <h1>UBAH PASSWORD</h1>
     <form id="password-form">
       <div class="mb-4">
         <label for="password-lama">password lama</label><span class="red-text">*</span>

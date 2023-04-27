@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($_SESSION['role'] <= 2) {
     $sql = "SELECT * FROM divisis";
   } else if ($_SESSION['role'] == 3) {
-    $sql = "SELECT * FROM divisis WHERE nama = ".$_SESSION['divisi'];
+    $sql = "SELECT * FROM divisis WHERE nama = '".$_SESSION['divisi']."'";
   }
   $stmt = $conn->prepare($sql);
   $stmt->execute();

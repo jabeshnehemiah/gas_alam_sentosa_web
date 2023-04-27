@@ -6,8 +6,10 @@ include 'connection.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $id = $_POST['id'];
   unset($_POST['id']);
-
-  echo var_dump($_POST);
+  if ($_POST['atasan_id'] == '') {
+    unset($_POST['atasan_id']);
+  }
+  
   // Get keys
   $keys = array_keys($_POST);
 
