@@ -602,8 +602,8 @@ include './head.php';
         </td>
         <td>
           <input type="number" id="harga-disabled${counter}" class="form-control validate" disabled>
-          <input type="number" id="harga-jual${counter}" name="detail_penawaran_barangs[${counter}][harga_jual]" class="form-control validate" hidden required>
-          <input type="number" id="harga-beli${counter}" name="detail_penawaran_barangs[${counter}][harga_beli]" class="form-control validate" hidden required>
+          <input type="number" id="harga-jual${counter}" name="detail_surat_jalans[${counter}][harga_jual]" class="form-control validate" hidden required>
+          <input type="number" id="harga-beli${counter}" name="detail_surat_jalans[${counter}][harga_beli]" class="form-control validate" hidden required>
         </td>
         <td><input type="number" name="detail_surat_jalans[${counter}][kuantitas]" class="form-control validate" required></td>
         <td>

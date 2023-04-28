@@ -1363,7 +1363,7 @@ include './head.php';
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
-                    <button type="submit" class="btn btn-danger" id="simpan-button"><i class="fas fa-trash mr-2"></i>Nonaktifkan</button>
+                    <button type="submit" class="btn btn-danger" id="simpan-button"><i class="fas fa-trash mr-2"></i>Hapus</button>
                   </div>
                 </form>
               </div>

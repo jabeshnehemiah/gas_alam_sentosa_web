@@ -122,8 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($ppn) {
           foreach ($details as $detail) {
             $detail['request_order_id'] = $idOrder;
-            $subtotal = intval($detail['kuantitas']) * intval($detail['harga_jual']);
-            $detail['subtotal'] = ceil($subtotal + $ppn * $subtotal / 100);
+            $detail['subtotal'] = ceil(intval($detail['kuantitas']) * intval($detail['harga_jual']) + intval($detail['kuantitas']) * intval($detail['harga_jual']) * $ppn / 100);
             // Get keys
             $keys = array_keys($detail);
 

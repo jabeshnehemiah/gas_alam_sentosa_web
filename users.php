@@ -41,7 +41,7 @@
     'atasan_id': {
       'type': 'select',
       'data': [],
-      'disabled': true,
+      <?php echo $_SESSION['role'] > 1 ? "'required': true," : ""; ?> 'disabled': true,
     },
   };
 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 26, 2023 at 10:53 AM
+-- Generation Time: Apr 28, 2023 at 11:06 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -93,7 +93,9 @@ INSERT INTO `detail_pelanggans` (`id`, `alamat`, `kota`, `provinsi`, `kode_pos`,
 (8, 'ijrgaijg', 'Jembrana', 'Bali', '1234', '', '', '', '', '', '', 11, '', 7),
 (16, 'agkw', NULL, NULL, '', '', '', '', '', '', '', 4, '', 10),
 (17, 'abcs', 'Gianyar', 'Bali', '', '', '', '', '', '', '', 13, '', 10),
-(18, 'abks', 'Jembrana', 'Bali', '', '', '', '', '', '', '', 5, '', 10);
+(18, 'abks', 'Jembrana', 'Bali', '', '', '', '', '', '', '', 5, '', 10),
+(20, 'lbgu', 'Badung', 'Bali', '', '', '', '', '', '', '', 5, '', 7),
+(21, 'Jl. Alamat 1304', 'Aceh Tenggara', 'Aceh', '', '', '', '', '', '', '', 5, '', 11);
 
 -- --------------------------------------------------------
 
@@ -119,6 +121,7 @@ INSERT INTO `detail_penawaran_barangs` (`barang_id`, `penawaran_barang_id`, `kua
 (4, 7, 13, NULL, 12000, 11, 173160),
 (4, 25, 12, NULL, 15000, 11, 199800),
 (4, 26, 2, NULL, 12000, 11, 26640),
+(4, 29, 5, 100000, 40000, 11, 222000),
 (5, 25, 10, NULL, 40000, 11, 444000),
 (5, 28, 5, 1000, 15000, 11, 83250),
 (8, 28, 10, 392049, 20000, 11, 222000);
@@ -142,11 +145,15 @@ CREATE TABLE `detail_pipeline_marketings` (
 INSERT INTO `detail_pipeline_marketings` (`barang_id`, `pipeline_marketing_id`, `kuantitas`) VALUES
 (4, 3, 3),
 (4, 12, 2),
+(4, 19, 5),
+(4, 20, 5),
 (5, 13, 5),
 (5, 15, 5),
 (5, 16, 2),
 (5, 17, 2),
 (5, 18, 2),
+(5, 19, 3),
+(5, 20, 3),
 (8, 17, 5),
 (8, 18, 5);
 
@@ -174,9 +181,11 @@ INSERT INTO `detail_request_orders` (`barang_id`, `request_order_id`, `harga_bel
 (4, 2, NULL, 3, 12000, 11, 39960),
 (4, 11, NULL, 2, 13000, 11, 28860),
 (4, 20, NULL, 2, 1200, 11, 2664),
+(4, 26, 100000, 5, 40000, 11, 222000),
 (5, 23, NULL, 5, 135732, 11, 753313),
 (5, 24, NULL, 3, 15500, 11, 51615),
 (5, 25, 1000, 7, 15000, 11, 116550),
+(5, 26, 1000, 3, 50000, 11, 166500),
 (8, 25, 392049, 9, 20000, 11, 199800),
 (11, 24, NULL, 2, 1400000, 0, 3108000),
 (13, 24, NULL, 5, 10000, 11, 55500);
@@ -203,7 +212,12 @@ CREATE TABLE `detail_surat_jalans` (
 
 INSERT INTO `detail_surat_jalans` (`barang_id`, `surat_jalan_id`, `kuantitas`, `harga_beli`, `harga_jual`, `ppn`, `subtotal`) VALUES
 (4, 9, 3, NULL, 12000, 11, 39960),
-(5, 8, 5, NULL, 40000, 11, 222000);
+(4, 12, 5, 100000, 40000, 11, 222000),
+(5, 8, 5, NULL, 40000, 11, 222000),
+(5, 11, 3, 1000, 15000, 11, 49950),
+(5, 12, 3, 1000, 50000, 11, 166500),
+(5, 13, 5, 1000, 15000, 11, 83250),
+(8, 11, 4, 392049, 20000, 11, 88800);
 
 -- --------------------------------------------------------
 
@@ -242,8 +256,10 @@ CREATE TABLE `harga_barangs` (
 
 INSERT INTO `harga_barangs` (`barang_id`, `detail_pelanggan_id`, `harga_jual`) VALUES
 (4, 16, 2100),
+(4, 21, 40000),
 (5, 6, 15000),
 (5, 18, 50000),
+(5, 21, 50000),
 (6, 17, 5000),
 (6, 18, 6000),
 (8, 6, 20000),
@@ -305,7 +321,8 @@ INSERT INTO `pelanggans` (`id`, `kode`, `badan_usaha`, `nama_perusahaan`, `konta
 (7, 'DUM1', 'PT', 'Dummy', '10231920', 'Jl. Dummy Umum', 'Paser', 'Kalimantan Timur', '1231', 'direktur', '0123919', 'pelanggan', NULL, '12931010', '12931010', 'Lancar', 1),
 (8, 'DUM2', 'CV', 'Halo', '12309488', NULL, 'Denpasar', 'Bali', '2939', NULL, NULL, NULL, NULL, NULL, NULL, 'Lancar', 1),
 (9, 'DUM3', 'Perum', 'Dana Untuk Masyarakat', '123456', 'arjpaojrg', 'Lebak', 'Banten', '', '', '', 'absc', '21345', '', '', 'Lancar', 1),
-(10, 'B1', 'UD', 'Blabal', '1234556', 'ABr e23', 'Lebak', 'Banten', '', '', '', 'Nabsi', '13094', '', '', 'Lancar', 1);
+(10, 'B1', 'UD', 'Blabal', '1234556', 'ABr e23', 'Lebak', 'Banten', '', '', '', 'Nabsi', '13094', '', '', 'Lancar', 1),
+(11, 'HC1', 'PT', 'Halo Coba', '2308324', 'Jl. Alamat 1203', 'Aceh Singkil', 'Aceh', '', '', '', 'Adi', '420', '', '', 'Lancar', 6);
 
 -- --------------------------------------------------------
 
@@ -338,7 +355,8 @@ INSERT INTO `penawaran_barangs` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tang
 (25, 'PWR/IT/2023/04/0008', 0, 0, '2023-04-10', 6, 1),
 (26, 'PWR/IT/2023/04/0009', 0, 0, '2023-04-13', 7, 1),
 (27, 'PWR/IT/2023/04/0010', 0, 0, '2023-04-13', 7, 1),
-(28, 'PWR/IT/2023/04/0011', 1000, 0, '2023-04-26', 6, 1);
+(28, 'PWR/IT/2023/04/0011', 1000, 0, '2023-04-26', 6, 1),
+(29, 'PWR/BS1/2023/04/0001', 4000, 13000, '2023-04-28', 21, 14);
 
 -- --------------------------------------------------------
 
@@ -371,7 +389,9 @@ INSERT INTO `pipeline_marketings` (`id`, `tanggal_dibuat`, `tanggal_survey`, `ta
 (15, '2023-04-13', '0000-00-00', '2023-04-18', 'Order', 6, 1, NULL),
 (16, '2023-04-14', '0000-00-00', '2023-04-18', 'Installed', 6, 1, 24),
 (17, '2023-04-26', '2023-04-13', '2023-04-18', 'Prepare', 6, 1, NULL),
-(18, '2023-04-26', '2023-04-13', '2023-04-18', 'Installed', 6, 1, 25);
+(18, '2023-04-26', '2023-04-13', '2023-04-18', 'Installed', 6, 1, 25),
+(19, '2023-04-28', '0000-00-00', '2023-04-27', 'Survey', 21, 14, NULL),
+(20, '2023-04-28', '0000-00-00', '2023-04-27', 'Installed', 21, 14, 26);
 
 -- --------------------------------------------------------
 
@@ -430,7 +450,8 @@ INSERT INTO `request_orders` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal
 (20, 'RO/IT/2023/04/0009', 0, 0, '2023-04-04', '23', '2023-04-09', 'RO_IT_2023_04_0009.pdf', '2023-04-12', NULL, 6, 1, NULL),
 (23, 'RO/IT/2023/04/0010', 0, 0, '2023-04-18', '345', '2023-04-27', 'RO_IT_2023_04_0010.pdf', '2023-04-13', NULL, 6, 1, NULL),
 (24, 'RO/IT/2023/04/0011', 13000, 15000, '2023-04-19', '1234', '2023-04-19', NULL, '2023-04-14', '2023-04-26', 6, 1, 1),
-(25, 'RO/IT/2023/04/0012', 50000, 10000, '2023-04-14', '17266', '2023-04-28', NULL, '2023-04-26', '2023-04-26', 6, 1, 1);
+(25, 'RO/IT/2023/04/0012', 50000, 10000, '2023-04-14', '17266', '2023-04-28', NULL, '2023-04-26', '2023-04-26', 6, 1, 1),
+(26, 'RO/BS1/2023/04/0001', 4000, 15000, '2023-05-06', '14030', '2023-05-10', 'RO_BS1_2023_04_0001.pdf', '2023-04-28', '2023-04-28', 21, 14, 14);
 
 -- --------------------------------------------------------
 
@@ -510,7 +531,10 @@ INSERT INTO `surat_jalans` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal_k
 (7, 'SJ/IT/2023/04/0002', NULL, NULL, '2023-04-27', '', '2023-04-10', 6, 1),
 (8, 'SJ/2023/04/0003', 42000, 0, '2023-04-06', 'hai', '2023-04-13', 2, 1),
 (9, 'SJ/2023/04/0004', NULL, NULL, '2023-04-05', '', '2023-04-13', 2, 1),
-(10, 'SJ/2023/04/0005', NULL, NULL, '2023-04-05', '', '2023-04-13', 2, 1);
+(10, 'SJ/2023/04/0005', NULL, NULL, '2023-04-05', '', '2023-04-13', 2, 1),
+(11, 'SJ/2023/04/0006', 50000, 10000, '2023-04-14', 'adi', '2023-04-27', 25, 1),
+(12, 'SJ/2023/04/0007', 4000, 15000, '2023-05-06', 'driver', '2023-04-28', 26, 14),
+(13, 'SJ/2023/04/0008', 5000, 0, '2023-04-05', '', '2023-04-28', 2, 1);
 
 -- --------------------------------------------------------
 
@@ -535,12 +559,13 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `kode`, `username`, `nama`, `password`, `aktif`, `role_id`, `divisi_id`, `atasan_id`) VALUES
-(1, 'IT', 'superadmin', 'IT Superadmin', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 1, 1, NULL, NULL),
-(2, 'DUM', 'marketing', 'Marketing Dummy', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 1, 3, 1, NULL),
-(5, 'coba', 'coba', 'coba', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 0, 4, 1, 1),
-(6, 'HD1', 'halodummy', 'Halo Dummy', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 1, 4, 1, 2),
-(7, 'HD2', 'haidommy', 'Hai Dommy', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 0, 4, 1, 2),
-(10, 'HB1', 'haloo', 'Haia Bass', '$2y$10$wvNjceRqf2xTZdNTWPVBie6lzQg2av2QFgm7avDI41z9MmK7O9nwm', 1, 3, 1, 2);
+(1, 'IT', 'superadmin', 'IT Superadmin', '$2y$10$aCrVmUYd7u9o20mI0E2OEeXTLhQCJqhJXtHm/O1BpPnQ.Ndn1oNDK', 1, 1, NULL, NULL),
+(2, 'DUM', 'marketing', 'Marketing Dummy', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 1, 3, 1, NULL),
+(5, 'coba', 'coba', 'coba', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 0, 4, 1, 1),
+(6, 'HD1', 'halodummy', 'Halo Dummy', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 1, 4, 1, 1),
+(7, 'HD2', 'haidommy', 'Hai Dommy', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 0, 4, 1, 2),
+(10, 'HB1', 'haloo', 'Haia Bass', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 1, 4, 1, 2),
+(14, 'BS1', 'budisan', 'Budi Santoso', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 1, 3, 1, 1);
 
 --
 -- Indexes for dumped tables
@@ -704,7 +729,7 @@ ALTER TABLE `barangs`
 -- AUTO_INCREMENT for table `detail_pelanggans`
 --
 ALTER TABLE `detail_pelanggans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `divisis`
@@ -722,19 +747,19 @@ ALTER TABLE `kategori_barangs`
 -- AUTO_INCREMENT for table `pelanggans`
 --
 ALTER TABLE `pelanggans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `penawaran_barangs`
 --
 ALTER TABLE `penawaran_barangs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `pipeline_marketings`
 --
 ALTER TABLE `pipeline_marketings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `ppns`
@@ -746,7 +771,7 @@ ALTER TABLE `ppns`
 -- AUTO_INCREMENT for table `request_orders`
 --
 ALTER TABLE `request_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -764,13 +789,13 @@ ALTER TABLE `satuans`
 -- AUTO_INCREMENT for table `surat_jalans`
 --
 ALTER TABLE `surat_jalans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- Constraints for dumped tables
