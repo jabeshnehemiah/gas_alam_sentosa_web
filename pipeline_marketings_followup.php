@@ -55,7 +55,7 @@ include './head.php';
 
   $(document).ready(async () => {
     await loadPelanggans();
-
+    
     await loadPage();
 
     $('.alert').alert();

@@ -10,6 +10,16 @@ include './head.php';
   <div class="container py-2">
     <div class="alert-container"></div>
     <h1 class="h1-responsive pb-2">SURAT JALAN</h1>
+    <div class="param-container py-3 d-flex">
+      <div class="mr-2">
+        <h6>tanggal awal</h6>
+        <input type="date" id="param-awal" class="form-control param" value="<?php echo date('Y-m-d', strtotime('-6 month')); ?>">
+      </div>
+      <div>
+        <h6>tanggal akhir</h6>
+        <input type="date" id="param-akhir" class="form-control param" value="<?php echo date('Y-m-d'); ?>">
+      </div>
+    </div>
     <div class="table-container"></div>
     <div class="modal-container"></div>
     <button type="button" class="btn btn-primary px-3 fab" aria-hidden="true" onClick="addModal()"><i class="fas fa-plus fa-2x"></i></button>
@@ -128,6 +138,9 @@ include './head.php';
     await loadPpn();
 
     await loadPage();
+    $('.param').change(async () => {
+      await loadPage();
+    });
 
     $('.alert').alert();
   });
@@ -195,6 +208,10 @@ include './head.php';
     await $.ajax({
       type: 'POST',
       url: './api/surat_jalan_get.php',
+      data: {
+        'awal': $('#param-awal').val(),
+        'akhir': $('#param-akhir').val(),
+      },
       success: (response) => {
         response = JSON.parse(response);
         let html;

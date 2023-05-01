@@ -42,7 +42,7 @@ $links = [
   ],
   'barangs.php' => [
     'text' => 'Barang',
-    'minRole' => 4,
+    'minRole' => 3,
     'isNav' => true,
     'dropdown' => 'Master',
     'divisi' => [

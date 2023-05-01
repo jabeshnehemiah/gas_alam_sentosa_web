@@ -15,19 +15,14 @@ include './head.php';
   <div class="container py-2">
     <div class="alert-container"></div>
     <h1 class="h1-responsive pb-2">PIPELINE HISTORY</h1>
-    <div class="param-container py-3">
-      <div class="py-2">
+    <div class="param-container py-3 d-flex">
+      <div class="mr-2">
         <h6>tanggal awal</h6>
         <input type="date" id="param-awal" class="form-control param" value="<?php echo date('Y-m-d', strtotime('-1 month')); ?>">
       </div>
-      <div class="py-2">
+      <div>
         <h6>tanggal akhir</h6>
         <input type="date" id="param-akhir" class="form-control param" value="<?php echo date('Y-m-d'); ?>">
-      </div>
-      <div class="py-2">
-        <h6>pelanggan</h6>
-        <select class="param" id="param-pelanggan">
-        </select>
       </div>
     </div>
     <div class="table-container"></div>
@@ -68,17 +63,11 @@ include './head.php';
 
   const tanggal = '<?php echo date('Y-m-d'); ?>'
 
-  $(document).ready(async()=> {
+  $(document).ready(async () => {
     await loadPelanggans();
-
+    await loadPage();
     $('.param').change(async () => {
       await loadPage();
-    });
-
-    $('#param-pelanggan').select2({
-      theme: 'bootstrap4',
-      width: 'style',
-      placeholder: 'PILIH SALAH SATU'
     });
 
     $('.alert').alert();
@@ -89,17 +78,11 @@ include './head.php';
     await $.ajax({
       type: 'POST',
       url: './api/pelanggan_get.php',
-      success: async response => {
+      success: response => {
         response = JSON.parse(response);
         if (response.success) {
           formInputs['pelanggan_id']['data'] = response.data;
         }
-        let first = true;
-        response.data.forEach(datum => {
-          $('#param-pelanggan').append(`<option value="${datum.id}" ${first?'selected':''}>${datum.badan_usaha} ${datum.nama_perusahaan} - ${datum.kota}</option>}`);
-          first = false;
-        });
-        await loadPage();
       },
       error: (jqXHR, textStatus, errorThrown) => {
         console.log(textStatus, errorThrown);
@@ -136,7 +119,6 @@ include './head.php';
       data: {
         'awal': $('#param-awal').val(),
         'akhir': $('#param-akhir').val(),
-        'pelanggan': $('#param-pelanggan').val(),
       },
       success: (response) => {
         response = JSON.parse(response);

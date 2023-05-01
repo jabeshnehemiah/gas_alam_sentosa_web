@@ -6,7 +6,6 @@ include 'generate_kode.php';
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $_POST['kode'] = generateKode('barangs', 4, $conn, $_POST['kategori_barang_id'], $_POST['satuan_id']);
-  echo var_dump($_POST);
 
   // Get keys
   $keys = array_keys($_POST);
