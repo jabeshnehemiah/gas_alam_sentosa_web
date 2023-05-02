@@ -39,6 +39,7 @@ include './head.php';
     },
     'tanggal_survey': {
       'type': 'date',
+      'required':true
     },
     'tanggal_instalasi': {
       'type': 'date',
@@ -55,7 +56,7 @@ include './head.php';
 
   $(document).ready(async () => {
     await loadPelanggans();
-    
+
     await loadPage();
 
     $('.alert').alert();
@@ -182,7 +183,7 @@ include './head.php';
           $('.table-container').html(html);
 
           // Set datatable
-          $('#datatable').dataTable({
+          const datatable = $('#datatable').DataTable({
             initComplete: function() {
               this.api().columns().every(function() {
                 var column = this;
@@ -199,9 +200,14 @@ include './head.php';
             scrollX: true,
             scrollCollapse: true,
             paging: true,
-
+            fixedColumns: {
+              left: $(window).width() >= 768 ? 1 : 0,
+            }
           });
 
+          window.onresize = event => {
+            datatable.fixedColumns().left($(window).width() >= 768 ? 1 : 0);
+          }
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);

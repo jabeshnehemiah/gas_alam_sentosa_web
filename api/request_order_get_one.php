@@ -4,8 +4,24 @@ include 'connection.php';
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $rev=0;
   if (isset($_POST['kode'])) {
     // Print
+    $sql =
+      "SELECT COUNT(hro.id) rev
+      FROM history_request_orders hro
+      INNER JOIN request_orders ro ON hro.request_order_id = ro.id
+      WHERE ro.kode = ?";
+  
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('s', $_POST['kode']);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    while ($row = $res->fetch_assoc()) {
+      $rev = $row['rev'];
+    }
+
     $sql =
       "SELECT ro.id, ro.detail_pelanggan_id, ro.diskon, ro.biaya_tambahan, ro.tanggal_kirim, ro.no_po, ro.tanggal_po, dro.barang_id, dro.kuantitas, dro.harga_jual, dro.ppn, b.harga_beli, ro.kode, CONCAT(p.badan_usaha,' ',p.nama_perusahaan) pelanggan, dp.alamat, ro.tanggal_dibuat, b.nama barang, s.nama satuan, dro.subtotal, ro.tanggal_konfirmasi
       FROM request_orders ro 
@@ -53,6 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  $response = ['success' => true, 'message' => 'Berhasil', 'data' => $data, 'barangs' => $barangs];
+  $response = ['success' => true, 'message' => 'Berhasil', 'data' => $data, 'barangs' => $barangs, 'rev' => $rev];
   echo json_encode($response);
 }

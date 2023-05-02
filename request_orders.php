@@ -269,6 +269,8 @@ include './head.php';
               if (datum[key] != null) {
                 if (key == 'file_po') {
                   row += `<td><a class="btn btn-link p-0 text-primary" target="_blank" href="./files/po/${datum[key]}?t=${Date.now()}">${datum[key]}</a></td>`;
+                } else if (key == 'aktif') {
+                  row += `<td>${datum['aktif']==0?'Draft':datum['aktif']==1?'Aktif':''}</td>`;
                 } else if (key != 'id' && key != 'detail_pelanggan' && key != 'kode_pelanggan') {
                   row += `<td>${datum[key]}</td>`;
                 }
@@ -281,15 +283,15 @@ include './head.php';
               <button type="button" class="btn btn-secondary btn-sm m-0 px-3 edit-button" onClick="editModal('${datum['kode']}','${datum['kode_pelanggan']}')"><i class="fas fa-edit"></i></button>
             `;
             <?php if ($_SESSION['role'] <= 4) { ?>
-              if (datum['konfirmasi'] == null) {
+              if (datum['konfirmasi'] == null && datum['aktif'] == 1) {
                 row += `<button type="button" class="btn btn-info btn-sm m-0 px-3 validate-button" onClick="infoModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-info-circle"></i></button>`;
-              } else {
+              } else if (datum['aktif'] == 1) {
                 row += `<button type="button" class="btn btn-default btn-sm m-0 px-3 print-button" onClick="print('${datum['kode']}')"><i class="fas fa-print"></i></button>`;
               }
             <?php } ?>
             if (datum['file_po'] != null) {
               row += `
-              <button type="button" class="btn btn-danger btn-sm m-0 px-3 delete-button" onClick="deleteModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-trash-alt"></i></button>
+              <button type="button" class="btn btn-warning btn-sm m-0 px-3 delete-button" onClick="deleteModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-file-excel"></i></button>
             `;
             }
             row += '</td>';
@@ -307,9 +309,8 @@ include './head.php';
 
           // Set table
           $('.table-container').html(html);
-
-          // Set datatable
-          $('#datatable').DataTable({
+          
+          const datatable = $('#datatable').DataTable({
             initComplete: function() {
               this.api().columns().every(function() {
                 var column = this;
@@ -322,16 +323,18 @@ include './head.php';
                       .search(val ? val : '', true, false)
                       .draw();
                   });
-
               });
             },
             scrollX: true,
             scrollCollapse: true,
             paging: true,
             fixedColumns: {
-              left: $(window).width() >= 576 ? 2 : 0,
+              left: $(window).width() >= 768 ? 2 : 0,
             }
           });
+          window.onresize = event => {
+            datatable.fixedColumns().left($(window).width() >= 768 ? 2 : 0);
+          }
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);
@@ -506,6 +509,7 @@ include './head.php';
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
+              <button class="btn btn-secondary" id="draft-button"><i class="fas fa-file-alt mr-2"></i>Draft</button>
               <button type="submit" class="btn btn-primary" id="simpan-button"><i class="fas fa-save mr-2"></i>Simpan</button>
             </div>
           </form>
@@ -614,7 +618,59 @@ include './head.php';
       });
     });
 
-    // Add event listener for save button
+    // Draft button
+    $('#draft-button').click((event) => {
+      event.preventDefault();
+
+      if (!$.trim($("#tbBarang").html())) {
+        alert('Daftar barang tidak boleh kosong.');
+      } else {
+        // Get the form data
+        const form = document.getElementById('input-form');
+        const formData = new FormData(document.getElementById('input-form'));
+        formData.delete('pelanggan_id');
+        formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
+        formData.append('aktif', 0);
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            if (!input.checked) {
+              formData.set(input.name, '');
+            }
+          } else if (input.value === '') {
+            if (input.type !== 'file') {
+              formData.set(input.name, '');
+            }
+          }
+        });
+
+        // Send the AJAX request
+        $.ajax({
+          type: 'POST',
+          url: './api/request_order_add.php',
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: async response => {
+            console.log(response);
+            response = JSON.parse(response);
+            $('#modalTambah').modal('hide');
+            $(".modal-backdrop").remove();
+            if (response.success) {
+              showAlert('success', response.message);
+            } else {
+              showAlert('danger', response.message);
+            }
+            await loadPage();
+          },
+          error: (jqXHR, textStatus, errorThrown) => {
+            console.log(textStatus, errorThrown);
+          }
+        });
+      }
+    });
+
+    // Submit button
     $('#input-form').submit((event) => {
       event.preventDefault();
 
@@ -626,6 +682,7 @@ include './head.php';
         const formData = new FormData(document.getElementById('input-form'));
         formData.delete('pelanggan_id');
         formData.append('marketing_id', <?php echo $_SESSION['id'] ?>);
+        formData.append('aktif', 1);
         const inputs = form.querySelectorAll('input, textarea, select');
         inputs.forEach(input => {
           if (input.type === 'checkbox' || input.type === 'radio') {
@@ -633,10 +690,11 @@ include './head.php';
               formData.set(input.name, '');
             }
           } else if (input.value === '') {
-            formData.set(input.name, '');
+            if (input.type !== 'file') {
+              formData.set(input.name, '');
+            }
           }
         });
-
 
         // Send the AJAX request
         $.ajax({
@@ -929,6 +987,7 @@ include './head.php';
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
+                    <button class="btn btn-secondary" id="draft-button"><i class="fas fa-file-alt mr-2"></i>Draft</button>
                     <button type="submit" class="btn btn-primary" id="simpan-button"><i class="fas fa-save mr-2"></i>Simpan</button>
                   </div>
                 </form>
@@ -982,6 +1041,58 @@ include './head.php';
                 selDetail.removeAttr('disabled');
               });
 
+              // Button draft
+              $('#draft-button').click(event => {
+                event.preventDefault();
+
+                if (!$.trim($("#tbBarang").html())) {
+                  alert('Daftar barang tidak boleh kosong.');
+                } else {
+                  // Get the form data
+                  const form = document.getElementById('edit-form');
+                  const formData = new FormData(document.getElementById('edit-form'));
+                  formData.delete('pelanggan_id');
+                  formData.append('id', response.data.id);
+                  formData.append('aktif', 0)
+                  const inputs = form.querySelectorAll('input, textarea, select');
+                  inputs.forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                      if (!input.checked) {
+                        formData.set(input.name, '');
+                      }
+                    } else if (input.value === '') {
+                      if (input.type !== 'file') {
+                        formData.set(input.name, '');
+                      }
+                    }
+                  });
+
+                  // Send the AJAX request
+                  $.ajax({
+                    type: 'POST',
+                    url: './api/request_order_edit.php',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: async response => {
+                      response = JSON.parse(response);
+                      $('#modalUbah').modal('hide');
+                      $(".modal-backdrop").remove();
+                      if (response.success) {
+                        showAlert('success', response.message);
+                      } else {
+                        showAlert('danger', response.message);
+                      }
+                      await loadPage();
+                    },
+                    error: (jqXHR, textStatus, errorThrown) => {
+                      console.log(textStatus, errorThrown);
+                    }
+                  });
+                }
+              });
+
+              // Button submit
               $('#edit-form').submit(event => {
                 event.preventDefault();
 
@@ -993,6 +1104,7 @@ include './head.php';
                   const formData = new FormData(document.getElementById('edit-form'));
                   formData.delete('pelanggan_id');
                   formData.append('id', response.data.id);
+                  formData.append('aktif', 1);
                   const inputs = form.querySelectorAll('input, textarea, select');
                   inputs.forEach(input => {
                     if (input.type === 'checkbox' || input.type === 'radio') {
@@ -1000,10 +1112,11 @@ include './head.php';
                         formData.set(input.name, '');
                       }
                     } else if (input.value === '') {
-                      formData.set(input.name, '');
+                      if (input.type !== 'file') {
+                        formData.set(input.name, '');
+                      }
                     }
                   });
-                  formData.delete('file_po');
 
                   // Send the AJAX request
                   $.ajax({
@@ -1114,7 +1227,7 @@ include './head.php';
               <div class="modal-content">
                 <form id="validate-form">
                   <div class="modal-header">
-                    <h5 class="modal-title">${kode}</h5>
+                    <h5 class="modal-title">${kode} ${response.rev>0?'revisi '+response.rev:''}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -1211,7 +1324,8 @@ include './head.php';
                     </div>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-times-circle mr-2"></i>Kembali</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
+                    ${response.rev>0?'<button type="button" data-dismiss="modal" class="btn btn-secondary" id="revisi-button" onClick="revisiModal('+id+')"><i class="fas fa-history mr-2"></i>Sebelumnya</button>':''}
                     <button type="submit" class="btn btn-primary" id="simpan-button"><i class="fas fa-check-circle mr-2"></i>Konfirmasi</button>
                   </div>
                 </form>
@@ -1239,11 +1353,12 @@ include './head.php';
         let table = '';
         let num = 1;
         response.barangs.forEach(barang => {
+          let color = barang.harga_jual > barang.harga_beli ? 'green-text' : barang.harga_jual == barang.harga_beli ? 'yellow-text' : 'red-text';
           table += `
           <tr>
             <td>${num}</td>
             <td>${barang.barang}</td>
-            <td>${barang.harga_jual}</td>
+            <td class="${color}">${barang.harga_jual}</td>
             <td>${barang.ppn*barang.harga_jual/100}</td>
             <td>${barang.kuantitas}</td>
             <td>${barang.satuan}</td>
@@ -1339,6 +1454,170 @@ include './head.php';
         document.title = response.data.kode.replace('/', '_');
         window.print();
         document.title = 'GAS';
+      },
+      error: (jqXHR, textStatus, errorThrown) => {
+        console.log(textStatus, errorThrown);
+      }
+    });
+  }
+
+  const revisiModal = (id) => {
+    $('#modalInfo').modal('hide');
+    $(".modal-backdrop").remove();
+    $.ajax({
+      type: 'POST',
+      url: './api/history_request_order_get_one.php',
+      data: {
+        'id': id,
+      },
+      success: response => {
+        response = JSON.parse(response);
+        console.log(response)
+        if (response.success) {
+          let modalRevisi = `
+          <div class="modal fade" id="modalRevisi" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalRevisiTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+              <div class="modal-content">
+                <form id="validate-form">
+                  <div class="modal-header">
+                    <h5 class="modal-title">${response.data.kode} ${response.rev>0?'revisi '+response.rev:''}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div id="revisi" class="p-5">
+                      <div class="d-flex justify-content-between pb-3">
+                        <div>
+                          <h4>PT Gas Alam Sentosa</h4>
+                          <h6>Ruko CBD Puncak 7F Toll</h6>
+                          <h6>Jl. Keramat I, Surabaya, Jawa Timur 60229</h6>
+                        </div>
+                        <div class="text-right">
+                          <h2>REQUEST ORDER</h2>
+                          <h4 id="revisi-kode"></h4>
+                        </div>
+                      </div>
+                      <hr class="border-dark">
+                      <div class="d-flex justify-content-between pt-3 pb-3">
+                        <div class="w-50">
+                          <h5>Permintaan Oleh</h5>
+                          <div class="d-flex">
+                            <div class="w-25">
+                              <h6>Nama</h6>
+                              <h6>Alamat</h6>
+                            </div>
+                            <div>
+                              <h6>:</h6>
+                              <h6>:</h6>
+                            </div>
+                            <div class="ml-1">
+                              <h6 id="revisi-nama"></h6>
+                              <h6 id="revisi-alamat"></h6>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="w-25">
+                          <h5>&nbsp;</h5>
+                          <div class="d-flex">
+                            <div class="w-50">
+                              <h6>No. PO</h6>
+                              <h6>Tanggal</h6>
+                            </div>
+                            <div>
+                              <h6>:</h6>
+                              <h6>:</h6>
+                            </div>
+                            <div class="ml-1">
+                              <h6 id="revisi-po"></h6>
+                              <h6 id="revisi-tanggal"></h6>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p>Mengajukan permintaan barang-barang sebagai berikut: </p>
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">BARANG</th>
+                            <th scope="col">HARGA (Rp)</th>
+                            <th scope="col">PPN (Rp)</th>
+                            <th scope="col">JUMLAH</th>
+                            <th scope="col">SATUAN</th>
+                            <th scope="col">SUBTOTAL (Rp)</th>
+                          </tr>
+                        </thead>
+                        <tbody id="revisi-barangs">
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="6">Diskon</td>
+                            <td id="revisi-diskon"></td>
+                          </tr>
+                          <tr>
+                            <td colspan="6">Biaya Tambahan</td>
+                            <td id="revisi-biaya"></td>
+                          </tr>
+                          <tr>
+                            <th scope="row" colspan="6">TOTAL (Rp)</th>
+                            <th id="revisi-total"></th>
+                          </tr>
+                        </tfoot>
+                      </table>
+                      <div class="d-flex justify-content-end pt-3">
+                        <div class="w-25">
+                          <h6 class="text-center pb-5 mb-5">Marketing</h6>
+                          <div>
+                            <h6 class="text-center" id="revisi-marketing"></h6>
+                            <h6 class="text-center" id="revisi-konfirmasi"></h6>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          `;
+          $('.modal-container').html(modalRevisi);
+          $('#modalRevisi').modal('show');
+
+          const date = new Date(response.data.tanggal_dibuat)
+          $('#revisi-kode').text(response.data.kode);
+          $('#revisi-nama').text(response.data.pelanggan);
+          $('#revisi-alamat').text(response.data.alamat);
+          $('#revisi-po').text(response.data.no_po);
+          $('#revisi-diskon').text(response.data.diskon);
+          $('#revisi-biaya').text(response.data.biaya_tambahan);
+          $('#revisi-tanggal').text(date.toLocaleDateString('id', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }));
+        }
+        let total = response.data.biaya_tambahan - response.data.diskon
+        let table = '';
+        let num = 1;
+        response.barangs.forEach(barang => {
+          let color = barang.harga_jual > barang.harga_beli ? 'green-text' : barang.harga_jual == barang.harga_beli ? 'yellow-text' : 'red-text';
+          table += `
+          <tr>
+            <td>${num}</td>
+            <td>${barang.barang}</td>
+            <td class="${color}">${barang.harga_jual}</td>
+            <td>${barang.ppn*barang.harga_jual/100}</td>
+            <td>${barang.kuantitas}</td>
+            <td>${barang.satuan}</td>
+            <td>${barang.subtotal}</td>
+          </tr>
+          `;
+          num++
+          total += barang.subtotal;
+        });
+        $('#revisi-barangs').html(table);
+        $('#revisi-total').text(total);
       },
       error: (jqXHR, textStatus, errorThrown) => {
         console.log(textStatus, errorThrown);

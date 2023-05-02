@@ -19,13 +19,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get values
     $values = array_values($_POST);
 
+    $sql = "SELECT manager_id FROM request_orders WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('s', $id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $rev = false;
+    while ($row = $res->fetch_assoc()) {
+      $rev = $row['manager_id'] == null ? false : true;
+    }
+
+    if ($rev) {
+      $sql =
+        "INSERT INTO history_request_orders (diskon, biaya_tambahan, tanggal_kirim, no_po, tanggal_po, request_order_id, detail_pelanggan_id)
+        SELECT diskon, biaya_tambahan, tanggal_kirim, no_po, tanggal_po, id, detail_pelanggan_id
+        FROM request_orders
+        WHERE id = $id";
+      $stmt = $conn->prepare($sql);
+      $stmt->execute();
+      $idHistory = $stmt->insert_id;
+
+      $sql =
+        "INSERT INTO detail_history_request_orders (barang_id, history_request_order_id, harga_beli, kuantitas, harga_jual, ppn, subtotal)
+        SELECT barang_id, '$idHistory', harga_beli, kuantitas, harga_jual, ppn, subtotal
+        FROM detail_request_orders
+        WHERE request_order_id = $id";
+      $stmt = $conn->prepare($sql);
+      $stmt->execute();
+    }
+
     if (isset($_POST['manager_id'])) {
       $sql = "UPDATE request_orders SET manager_id = ?, tanggal_konfirmasi = NOW() ";
       $params = 's';
     } else {
       $placeholder = '';
       $params = '';
-      $sql = "UPDATE request_orders SET manager_id = null, ";
+      $sql = "UPDATE request_orders SET manager_id = null, tanggal_konfirmasi = null, ";
       for ($i = 0; $i < count($_POST); $i++) {
         $key = $keys[$i];
         if ($i == count($_POST) - 1) {
@@ -36,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $params .= 's';
       }
     }
-    $sql .= "WHERE id = '$id'";
+    $sql .= "WHERE id = $id";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param($params, ...$values);
     $stmt->execute();

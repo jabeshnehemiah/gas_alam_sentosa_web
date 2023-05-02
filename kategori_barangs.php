@@ -20,14 +20,14 @@
       'required': true
     },
   }
-  $(document).ready(async()=> {
+  $(document).ready(async () => {
     await loadPage();
 
     $('.alert').alert();
   });
 
   // Function to load page
-  const loadPage =async () => {
+  const loadPage = async () => {
     // Send the AJAX request
     await $.ajax({
       type: 'POST',
@@ -91,7 +91,7 @@
           $('.table-container').html(html);
 
           // Set datatable
-          $('#datatable').dataTable({
+          const datatable = $('#datatable').DataTable({
             initComplete: function() {
               this.api().columns().every(function() {
                 var column = this;

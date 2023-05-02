@@ -179,7 +179,7 @@
           $('.table-container').html(html);
 
           // Set datatable
-          $('#datatable').dataTable({
+          const datatable = $('#datatable').dataTable({
             initComplete: function() {
               this.api().columns().every(function() {
                 var column = this;

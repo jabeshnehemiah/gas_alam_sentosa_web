@@ -280,7 +280,7 @@ include './head.php';
           $('.table-container').html(html);
 
           // Set datatable
-          $('#datatable').dataTable({
+          const datatable=$('#datatable').DataTable({
             initComplete: function() {
               this.api().columns().every(function() {
                 var column = this;
@@ -298,9 +298,13 @@ include './head.php';
             scrollCollapse: true,
             paging: true,
             fixedColumns: {
-              left: $(window).width() >= 576 ? 2 : 0,
+              left: $(window).width() >= 768 ? 2 : 0,
             }
           });
+          
+          window.onresize = event => {
+            datatable.fixedColumns().left($(window).width() >= 768 ? 2 : 0);
+          }
         } else {
           html = '<p class="h3 red-text text-center">No data available</p>';
           $('.table-container').html(html);

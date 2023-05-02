@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 28, 2023 at 11:06 AM
+-- Generation Time: May 02, 2023 at 11:09 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -36,6 +36,7 @@ CREATE TABLE `barangs` (
   `harga_beli` double DEFAULT NULL,
   `file_gambar` varchar(45) DEFAULT NULL,
   `kode_acc` varchar(45) DEFAULT NULL,
+  `aktif` tinyint(4) DEFAULT NULL,
   `kategori_barang_id` int(11) NOT NULL,
   `satuan_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
@@ -44,21 +45,46 @@ CREATE TABLE `barangs` (
 -- Dumping data for table `barangs`
 --
 
-INSERT INTO `barangs` (`id`, `kode`, `nama`, `tipe`, `alur`, `harga_beli`, `file_gambar`, `kode_acc`, `kategori_barang_id`, `satuan_id`) VALUES
-(4, 'DUM', 'Dummy', 'Persediaan', 'Jual', 100000, NULL, '0000', 1, 1),
-(5, '001110001', 'coba ahoirw ajsjs', 'Persediaan', 'Jual', 1000, '001110001.png', '134', 1, 1),
-(6, '001060001', 'ruhag', 'Persediaan', 'Jual', 13989, NULL, '8928', 1, 1),
-(7, '001070001', 'jnr', 'Jasa', 'Beli', 23987, NULL, '9302', 1, 1),
-(8, '001080001', 'tes', NULL, 'All', 392049, NULL, '91340', 1, 8),
-(9, '002110001', 'ekg', NULL, 'All', 324902, NULL, '0293049', 2, 11),
-(10, '002110002', 'ekg', NULL, 'All', 324902, NULL, '0293049', 2, 11),
-(11, '001050001', 'akeg', NULL, 'Jual', 2983498, NULL, '2942', 1, 5),
-(12, '0010080001', 'hai', 'Persediaan', 'Beli', 8249, '0010080001.png', '320', 1, 1),
-(13, '0010080002', 'hai', NULL, 'Jual', 8249, NULL, '320', 1, 10),
-(14, '0010080003', 'hai', NULL, 'All', 8249, NULL, '320', 1, 10),
-(15, '0010080004', 'hai', NULL, 'Jual', 8249, '0010080004.png', '320', 1, 10),
-(16, '001120001', 'lkrk', NULL, 'Jual', 82989, NULL, '329', 1, 12),
-(17, '001030001', 'Barangg', 'Persediaan', 'Beli', 13000, NULL, '45326', 1, 1);
+INSERT INTO `barangs` (`id`, `kode`, `nama`, `tipe`, `alur`, `harga_beli`, `file_gambar`, `kode_acc`, `aktif`, `kategori_barang_id`, `satuan_id`) VALUES
+(4, 'DUM', 'Dummy', 'Persediaan', 'Jual', 100000, NULL, '0000', 1, 1, 1),
+(5, '001110001', 'coba ahoirw ajsjs', 'Persediaan', 'Jual', 1000, '001110001.png', '134', 1, 1, 1),
+(6, '001060001', 'ruhag', 'Persediaan', 'Jual', 13989, NULL, '8928', 1, 1, 1),
+(7, '001070001', 'jnr', 'Jasa', 'Beli', 23987, NULL, '9302', 1, 1, 1),
+(8, '001080001', 'tes', NULL, 'All', 392049, NULL, '91340', 1, 1, 8),
+(9, '002110001', 'ekg', NULL, 'All', 324902, NULL, '0293049', 1, 2, 11),
+(10, '002110002', 'ekg', NULL, 'All', 324902, NULL, '0293049', 1, 2, 11),
+(11, '001050001', 'akeg', NULL, 'Jual', 2983498, NULL, '2942', 1, 1, 5),
+(12, '0010080001', 'hai', 'Persediaan', 'Beli', 8249, '0010080001.png', '320', 1, 1, 1),
+(13, '0010080002', 'hai', NULL, 'Jual', 8249, NULL, '320', 1, 1, 10),
+(14, '0010080003', 'hai', NULL, 'All', 8249, NULL, '320', 1, 1, 10),
+(15, '0010080004', 'hai', NULL, 'Jual', 8249, '0010080004.png', '320', 1, 1, 10),
+(16, '001120001', 'lkrk', NULL, 'Jual', 82989, NULL, '329', 1, 1, 12),
+(17, '001030001', 'Barangg', 'Persediaan', 'Beli', 13000, NULL, '45326', 1, 1, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `detail_history_request_orders`
+--
+
+CREATE TABLE `detail_history_request_orders` (
+  `barang_id` int(11) NOT NULL,
+  `history_request_order_id` int(11) NOT NULL,
+  `harga_beli` double DEFAULT NULL,
+  `kuantitas` double DEFAULT NULL,
+  `harga_jual` double DEFAULT NULL,
+  `ppn` double DEFAULT NULL,
+  `subtotal` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `detail_history_request_orders`
+--
+
+INSERT INTO `detail_history_request_orders` (`barang_id`, `history_request_order_id`, `harga_beli`, `kuantitas`, `harga_jual`, `ppn`, `subtotal`) VALUES
+(6, 1, 13989, 3, 40000, 11, 133200),
+(6, 2, 13989, 3, 40000, 11, 133200),
+(6, 4, 13989, 3, 40000, 11, 133200);
 
 -- --------------------------------------------------------
 
@@ -95,7 +121,9 @@ INSERT INTO `detail_pelanggans` (`id`, `alamat`, `kota`, `provinsi`, `kode_pos`,
 (17, 'abcs', 'Gianyar', 'Bali', '', '', '', '', '', '', '', 13, '', 10),
 (18, 'abks', 'Jembrana', 'Bali', '', '', '', '', '', '', '', 5, '', 10),
 (20, 'lbgu', 'Badung', 'Bali', '', '', '', '', '', '', '', 5, '', 7),
-(21, 'Jl. Alamat 1304', 'Aceh Tenggara', 'Aceh', '', '', '', '', '', '', '', 5, '', 11);
+(21, 'Jl. Alamat 1304', 'Aceh Tenggara', 'Aceh', '', '', '', '', '', '', '', 5, '', 11),
+(22, 'Jl. Alamat 1202324', 'Aceh Timur', 'Aceh', '', '', '', '', '', '', '', 4, '', 12),
+(23, 'Jl. Alamat 13 es2', 'Aceh Singkil', 'Aceh', '', '', '', '', '', '', '', 2, '', 12);
 
 -- --------------------------------------------------------
 
@@ -122,6 +150,7 @@ INSERT INTO `detail_penawaran_barangs` (`barang_id`, `penawaran_barang_id`, `kua
 (4, 25, 12, NULL, 15000, 11, 199800),
 (4, 26, 2, NULL, 12000, 11, 26640),
 (4, 29, 5, 100000, 40000, 11, 222000),
+(4, 30, 10, 100000, 15000, 11, 166500),
 (5, 25, 10, NULL, 40000, 11, 444000),
 (5, 28, 5, 1000, 15000, 11, 83250),
 (8, 28, 10, 392049, 20000, 11, 222000);
@@ -147,6 +176,9 @@ INSERT INTO `detail_pipeline_marketings` (`barang_id`, `pipeline_marketing_id`, 
 (4, 12, 2),
 (4, 19, 5),
 (4, 20, 5),
+(4, 21, 13),
+(4, 22, 13),
+(4, 23, 4),
 (5, 13, 5),
 (5, 15, 5),
 (5, 16, 2),
@@ -154,6 +186,9 @@ INSERT INTO `detail_pipeline_marketings` (`barang_id`, `pipeline_marketing_id`, 
 (5, 18, 2),
 (5, 19, 3),
 (5, 20, 3),
+(5, 21, 4),
+(5, 22, 4),
+(6, 24, 3),
 (8, 17, 5),
 (8, 18, 5);
 
@@ -182,10 +217,15 @@ INSERT INTO `detail_request_orders` (`barang_id`, `request_order_id`, `harga_bel
 (4, 11, NULL, 2, 13000, 11, 28860),
 (4, 20, NULL, 2, 1200, 11, 2664),
 (4, 26, 100000, 5, 40000, 11, 222000),
+(4, 27, 100000, 13, 15000, 11, 216450),
+(4, 28, 100000, 4, 15000, 11, 66600),
+(4, 29, 100000, 5, 12000, 11, 66600),
 (5, 23, NULL, 5, 135732, 11, 753313),
 (5, 24, NULL, 3, 15500, 11, 51615),
 (5, 25, 1000, 7, 15000, 11, 116550),
 (5, 26, 1000, 3, 50000, 11, 166500),
+(5, 27, 1000, 4, 40000, 11, 177600),
+(6, 29, 13989, 5, 40000, 11, 222000),
 (8, 25, 392049, 9, 20000, 11, 199800),
 (11, 24, NULL, 2, 1400000, 0, 3108000),
 (13, 24, NULL, 5, 10000, 11, 55500);
@@ -213,10 +253,12 @@ CREATE TABLE `detail_surat_jalans` (
 INSERT INTO `detail_surat_jalans` (`barang_id`, `surat_jalan_id`, `kuantitas`, `harga_beli`, `harga_jual`, `ppn`, `subtotal`) VALUES
 (4, 9, 3, NULL, 12000, 11, 39960),
 (4, 12, 5, 100000, 40000, 11, 222000),
+(4, 14, 2, 100000, 15000, 11, 33300),
 (5, 8, 5, NULL, 40000, 11, 222000),
 (5, 11, 3, 1000, 15000, 11, 49950),
 (5, 12, 3, 1000, 50000, 11, 166500),
 (5, 13, 5, 1000, 15000, 11, 83250),
+(5, 14, 1, 1000, 40000, 11, 44400),
 (8, 11, 4, 392049, 20000, 11, 88800);
 
 -- --------------------------------------------------------
@@ -257,13 +299,44 @@ CREATE TABLE `harga_barangs` (
 INSERT INTO `harga_barangs` (`barang_id`, `detail_pelanggan_id`, `harga_jual`) VALUES
 (4, 16, 2100),
 (4, 21, 40000),
+(4, 22, 15000),
+(4, 23, 12000),
 (5, 6, 15000),
 (5, 18, 50000),
 (5, 21, 50000),
+(5, 22, 40000),
 (6, 17, 5000),
 (6, 18, 6000),
+(6, 23, 40000),
 (8, 6, 20000),
 (11, 18, 14000);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `history_request_orders`
+--
+
+CREATE TABLE `history_request_orders` (
+  `id` int(11) NOT NULL,
+  `diskon` double DEFAULT NULL,
+  `biaya_tambahan` double DEFAULT NULL,
+  `tanggal_kirim` date DEFAULT NULL,
+  `no_po` varchar(45) DEFAULT NULL,
+  `tanggal_po` date DEFAULT NULL,
+  `tanggal_konfirmasi` date DEFAULT NULL,
+  `request_order_id` int(11) NOT NULL,
+  `detail_pelanggan_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `history_request_orders`
+--
+
+INSERT INTO `history_request_orders` (`id`, `diskon`, `biaya_tambahan`, `tanggal_kirim`, `no_po`, `tanggal_po`, `tanggal_konfirmasi`, `request_order_id`, `detail_pelanggan_id`) VALUES
+(1, 0, 0, '2023-05-23', '1212', '2023-05-19', '2023-05-02', 29, 23),
+(2, 0, 0, '2023-05-23', '1214', '2023-05-19', '2023-05-02', 29, 23),
+(4, 0, 0, '2023-05-23', '1214', '2023-05-19', NULL, 29, 23);
 
 -- --------------------------------------------------------
 
@@ -322,7 +395,8 @@ INSERT INTO `pelanggans` (`id`, `kode`, `badan_usaha`, `nama_perusahaan`, `konta
 (8, 'DUM2', 'CV', 'Halo', '12309488', NULL, 'Denpasar', 'Bali', '2939', NULL, NULL, NULL, NULL, NULL, NULL, 'Lancar', 1),
 (9, 'DUM3', 'Perum', 'Dana Untuk Masyarakat', '123456', 'arjpaojrg', 'Lebak', 'Banten', '', '', '', 'absc', '21345', '', '', 'Lancar', 1),
 (10, 'B1', 'UD', 'Blabal', '1234556', 'ABr e23', 'Lebak', 'Banten', '', '', '', 'Nabsi', '13094', '', '', 'Lancar', 1),
-(11, 'HC1', 'PT', 'Halo Coba', '2308324', 'Jl. Alamat 1203', 'Aceh Singkil', 'Aceh', '', '', '', 'Adi', '420', '', '', 'Lancar', 6);
+(11, 'HC1', 'PT', 'Halo Coba', '2308324', 'Jl. Alamat 1203', 'Aceh Singkil', 'Aceh', '', '', '', 'Adi', '420', '', '', 'Lancar', 6),
+(12, 'PD1', 'PT', 'Perusahaan Dummy', '12345', 'Jl. Alamat 1203', 'Simeulue', 'Aceh', '', '', '', 'Pelangan', '123414', '', '', 'Lancar', 15);
 
 -- --------------------------------------------------------
 
@@ -356,7 +430,8 @@ INSERT INTO `penawaran_barangs` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tang
 (26, 'PWR/IT/2023/04/0009', 0, 0, '2023-04-13', 7, 1),
 (27, 'PWR/IT/2023/04/0010', 0, 0, '2023-04-13', 7, 1),
 (28, 'PWR/IT/2023/04/0011', 1000, 0, '2023-04-26', 6, 1),
-(29, 'PWR/BS1/2023/04/0001', 4000, 13000, '2023-04-28', 21, 14);
+(29, 'PWR/BS1/2023/04/0001', 4000, 13000, '2023-04-28', 21, 14),
+(30, 'PWR/JN1/2023/05/0001', 0, 0, '2023-05-01', 22, 15);
 
 -- --------------------------------------------------------
 
@@ -391,7 +466,11 @@ INSERT INTO `pipeline_marketings` (`id`, `tanggal_dibuat`, `tanggal_survey`, `ta
 (17, '2023-04-26', '2023-04-13', '2023-04-18', 'Prepare', 6, 1, NULL),
 (18, '2023-04-26', '2023-04-13', '2023-04-18', 'Installed', 6, 1, 25),
 (19, '2023-04-28', '0000-00-00', '2023-04-27', 'Survey', 21, 14, NULL),
-(20, '2023-04-28', '0000-00-00', '2023-04-27', 'Installed', 21, 14, 26);
+(20, '2023-04-28', '0000-00-00', '2023-04-27', 'Installed', 21, 14, 26),
+(21, '2023-05-01', '0000-00-00', '2023-05-17', 'Progress', 22, 15, NULL),
+(22, '2023-05-01', '0000-00-00', '2023-05-17', 'Installed', 22, 15, 27),
+(23, '2023-05-02', '0000-00-00', '2023-05-17', 'Installed', 22, 15, 28),
+(24, '2023-05-02', NULL, NULL, 'Installed', 23, 15, 29);
 
 -- --------------------------------------------------------
 
@@ -427,6 +506,7 @@ CREATE TABLE `request_orders` (
   `no_po` varchar(45) DEFAULT NULL,
   `tanggal_po` date DEFAULT NULL,
   `file_po` varchar(45) DEFAULT NULL,
+  `aktif` tinyint(4) DEFAULT NULL,
   `tanggal_dibuat` date DEFAULT current_timestamp(),
   `tanggal_konfirmasi` date DEFAULT NULL,
   `detail_pelanggan_id` int(11) NOT NULL,
@@ -438,20 +518,23 @@ CREATE TABLE `request_orders` (
 -- Dumping data for table `request_orders`
 --
 
-INSERT INTO `request_orders` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal_kirim`, `no_po`, `tanggal_po`, `file_po`, `tanggal_dibuat`, `tanggal_konfirmasi`, `detail_pelanggan_id`, `marketing_id`, `manager_id`) VALUES
-(2, 'RO/IT/2023/04/0001', 5000, 0, '2023-04-05', '8249', '2023-04-12', 'RO_IT_2023_04_0001.pdf', '2023-04-08', '2023-04-26', 6, 1, 1),
-(3, 'RO/IT/2023/04/0002', 0, 0, '2023-04-06', '82493', '2023-04-12', NULL, '2023-04-08', NULL, 6, 1, 1),
-(4, 'RO/IT/2023/04/0003', 0, 0, '2023-04-05', '82493', '2023-04-12', NULL, '2023-04-08', NULL, 6, 1, NULL),
-(5, 'RO/IT/2023/04/0004', 0, 0, '2023-04-05', '82493', '2023-04-12', 'RO_IT_2023_04_0004.png', '2023-04-08', NULL, 6, 1, NULL),
-(6, 'RO/IT/2023/04/0005', 0, 0, '2023-04-06', '89483', '2023-04-03', 'RO_IT_2023_04_0005.pdf', '2023-04-08', NULL, 6, 1, NULL),
-(7, 'RO/IT/2023/04/0006', 0, 0, '2023-04-04', '', '0000-00-00', NULL, '2023-04-08', '2023-04-26', 6, 1, 1),
-(8, 'RO/IT/2023/04/0007', 0, 0, '2023-04-12', '', '0000-00-00', NULL, '2023-04-08', '2023-04-26', 6, 1, 1),
-(11, 'RO/IT/2023/04/0008', 0, 0, '2023-04-11', '123', '2023-04-03', 'RO_IT_2023_04_0008.pdf', '2023-04-12', NULL, 6, 1, NULL),
-(20, 'RO/IT/2023/04/0009', 0, 0, '2023-04-04', '23', '2023-04-09', 'RO_IT_2023_04_0009.pdf', '2023-04-12', NULL, 6, 1, NULL),
-(23, 'RO/IT/2023/04/0010', 0, 0, '2023-04-18', '345', '2023-04-27', 'RO_IT_2023_04_0010.pdf', '2023-04-13', NULL, 6, 1, NULL),
-(24, 'RO/IT/2023/04/0011', 13000, 15000, '2023-04-19', '1234', '2023-04-19', NULL, '2023-04-14', '2023-04-26', 6, 1, 1),
-(25, 'RO/IT/2023/04/0012', 50000, 10000, '2023-04-14', '17266', '2023-04-28', NULL, '2023-04-26', '2023-04-26', 6, 1, 1),
-(26, 'RO/BS1/2023/04/0001', 4000, 15000, '2023-05-06', '14030', '2023-05-10', 'RO_BS1_2023_04_0001.pdf', '2023-04-28', '2023-04-28', 21, 14, 14);
+INSERT INTO `request_orders` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal_kirim`, `no_po`, `tanggal_po`, `file_po`, `aktif`, `tanggal_dibuat`, `tanggal_konfirmasi`, `detail_pelanggan_id`, `marketing_id`, `manager_id`) VALUES
+(2, 'RO/IT/2023/04/0001', 5000, 0, '2023-04-05', '8249', '2023-04-12', 'RO_IT_2023_04_0001.pdf', 1, '2023-04-08', '2023-04-26', 6, 1, 1),
+(3, 'RO/IT/2023/04/0002', 0, 0, '2023-04-06', '82493', '2023-04-12', NULL, 1, '2023-04-08', NULL, 6, 1, 1),
+(4, 'RO/IT/2023/04/0003', 0, 0, '2023-04-05', '82493', '2023-04-12', NULL, 1, '2023-04-08', NULL, 6, 1, NULL),
+(5, 'RO/IT/2023/04/0004', 0, 0, '2023-04-05', '82493', '2023-04-12', 'RO_IT_2023_04_0004.png', 1, '2023-04-08', NULL, 6, 1, NULL),
+(6, 'RO/IT/2023/04/0005', 0, 0, '2023-04-06', '89483', '2023-04-03', 'RO_IT_2023_04_0005.pdf', 1, '2023-04-08', NULL, 6, 1, NULL),
+(7, 'RO/IT/2023/04/0006', 0, 0, '2023-04-04', '', '0000-00-00', NULL, 1, '2023-04-08', '2023-04-26', 6, 1, 1),
+(8, 'RO/IT/2023/04/0007', 0, 0, '2023-04-12', '', '0000-00-00', NULL, 1, '2023-04-08', '2023-04-26', 6, 1, 1),
+(11, 'RO/IT/2023/04/0008', 0, 0, '2023-04-11', '123', '2023-04-03', 'RO_IT_2023_04_0008.pdf', 1, '2023-04-12', NULL, 6, 1, NULL),
+(20, 'RO/IT/2023/04/0009', 0, 0, '2023-04-04', '23', '2023-04-09', 'RO_IT_2023_04_0009.pdf', 1, '2023-04-12', NULL, 6, 1, NULL),
+(23, 'RO/IT/2023/04/0010', 0, 0, '2023-04-18', '345', '2023-04-27', 'RO_IT_2023_04_0010.pdf', 1, '2023-04-13', NULL, 6, 1, NULL),
+(24, 'RO/IT/2023/04/0011', 13000, 15000, '2023-04-19', '1234', '2023-04-19', NULL, 1, '2023-04-14', '2023-04-26', 6, 1, 1),
+(25, 'RO/IT/2023/04/0012', 50000, 10000, '2023-04-14', '17266', '2023-04-28', NULL, 1, '2023-04-26', '2023-04-26', 6, 1, 1),
+(26, 'RO/BS1/2023/04/0001', 4000, 15000, '2023-05-06', '14030', '2023-05-10', 'RO_BS1_2023_04_0001.pdf', 1, '2023-04-28', '2023-04-28', 21, 14, 14),
+(27, 'RO/JN1/2023/05/0001', 0, 0, '2023-05-12', '1234', '2023-05-11', 'RO_JN1_2023_05_0001.pdf', 1, '2023-05-01', '2023-05-01', 22, 15, NULL),
+(28, 'RO/JN1/2023/05/0002', 0, 0, '2023-05-12', '1212', '2023-05-26', NULL, 1, '2023-05-02', NULL, 22, 15, NULL),
+(29, 'RO/JN1/2023/05/0003', 4000, 0, '2023-05-23', '1214', '2023-05-19', NULL, 1, '2023-05-02', NULL, 23, 15, NULL);
 
 -- --------------------------------------------------------
 
@@ -534,7 +617,8 @@ INSERT INTO `surat_jalans` (`id`, `kode`, `diskon`, `biaya_tambahan`, `tanggal_k
 (10, 'SJ/2023/04/0005', NULL, NULL, '2023-04-05', '', '2023-04-13', 2, 1),
 (11, 'SJ/2023/04/0006', 50000, 10000, '2023-04-14', 'adi', '2023-04-27', 25, 1),
 (12, 'SJ/2023/04/0007', 4000, 15000, '2023-05-06', 'driver', '2023-04-28', 26, 14),
-(13, 'SJ/2023/04/0008', 5000, 0, '2023-04-05', '', '2023-04-28', 2, 1);
+(13, 'SJ/2023/04/0008', 5000, 0, '2023-04-05', '', '2023-04-28', 2, 1),
+(14, 'SJ/2023/05/0001', 0, 0, '2023-05-12', '', '2023-05-01', 27, 15);
 
 -- --------------------------------------------------------
 
@@ -565,7 +649,8 @@ INSERT INTO `users` (`id`, `kode`, `username`, `nama`, `password`, `aktif`, `rol
 (6, 'HD1', 'halodummy', 'Halo Dummy', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 1, 4, 1, 1),
 (7, 'HD2', 'haidommy', 'Hai Dommy', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 0, 4, 1, 2),
 (10, 'HB1', 'haloo', 'Haia Bass', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 1, 4, 1, 2),
-(14, 'BS1', 'budisan', 'Budi Santoso', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 1, 3, 1, 1);
+(14, 'BS1', 'budisan', 'Budi Santoso', '$2y$10$4a7OWGm3soya4JcDVUm/buRUCJ4Ftml1epW1SJiynwH5z2Sc5Jct2', 1, 3, 1, 1),
+(15, 'JN1', 'jabeshnehemiah', 'Jabesh Nehemiah', '$2y$10$z842LITyuJltvVbGr4GWSOnipW/km6AhkjiuFxMeDsOsvhm5uJqXC', 1, 3, 1, NULL);
 
 --
 -- Indexes for dumped tables
@@ -579,6 +664,14 @@ ALTER TABLE `barangs`
   ADD UNIQUE KEY `kode_UNIQUE` (`kode`),
   ADD KEY `fk_barangs_kategori_barangs_idx` (`kategori_barang_id`),
   ADD KEY `fk_barangs_satuans1_idx` (`satuan_id`);
+
+--
+-- Indexes for table `detail_history_request_orders`
+--
+ALTER TABLE `detail_history_request_orders`
+  ADD PRIMARY KEY (`barang_id`,`history_request_order_id`),
+  ADD KEY `fk_barangs_has_history_request_orders_history_request_order_idx` (`history_request_order_id`),
+  ADD KEY `fk_barangs_has_history_request_orders_barangs1_idx` (`barang_id`);
 
 --
 -- Indexes for table `detail_pelanggans`
@@ -632,6 +725,14 @@ ALTER TABLE `harga_barangs`
   ADD PRIMARY KEY (`barang_id`,`detail_pelanggan_id`),
   ADD KEY `fk_barangs_has_detail_pelanggans_detail_pelanggans1_idx` (`detail_pelanggan_id`),
   ADD KEY `fk_barangs_has_detail_pelanggans_barangs1_idx` (`barang_id`);
+
+--
+-- Indexes for table `history_request_orders`
+--
+ALTER TABLE `history_request_orders`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_history_request_orders_request_orders1_idx` (`request_order_id`),
+  ADD KEY `fk_history_request_orders_detail_pelanggans1_idx` (`detail_pelanggan_id`);
 
 --
 -- Indexes for table `kategori_barangs`
@@ -729,13 +830,19 @@ ALTER TABLE `barangs`
 -- AUTO_INCREMENT for table `detail_pelanggans`
 --
 ALTER TABLE `detail_pelanggans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `divisis`
 --
 ALTER TABLE `divisis`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `history_request_orders`
+--
+ALTER TABLE `history_request_orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `kategori_barangs`
@@ -747,19 +854,19 @@ ALTER TABLE `kategori_barangs`
 -- AUTO_INCREMENT for table `pelanggans`
 --
 ALTER TABLE `pelanggans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `penawaran_barangs`
 --
 ALTER TABLE `penawaran_barangs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `pipeline_marketings`
 --
 ALTER TABLE `pipeline_marketings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `ppns`
@@ -771,7 +878,7 @@ ALTER TABLE `ppns`
 -- AUTO_INCREMENT for table `request_orders`
 --
 ALTER TABLE `request_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -789,13 +896,13 @@ ALTER TABLE `satuans`
 -- AUTO_INCREMENT for table `surat_jalans`
 --
 ALTER TABLE `surat_jalans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables
@@ -807,6 +914,13 @@ ALTER TABLE `users`
 ALTER TABLE `barangs`
   ADD CONSTRAINT `fk_barangs_kategori_barangs` FOREIGN KEY (`kategori_barang_id`) REFERENCES `kategori_barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_barangs_satuans1` FOREIGN KEY (`satuan_id`) REFERENCES `satuans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `detail_history_request_orders`
+--
+ALTER TABLE `detail_history_request_orders`
+  ADD CONSTRAINT `fk_barangs_has_history_request_orders_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_barangs_has_history_request_orders_history_request_orders1` FOREIGN KEY (`history_request_order_id`) REFERENCES `history_request_orders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `detail_pelanggans`
@@ -848,6 +962,13 @@ ALTER TABLE `detail_surat_jalans`
 ALTER TABLE `harga_barangs`
   ADD CONSTRAINT `fk_barangs_has_detail_pelanggans_barangs1` FOREIGN KEY (`barang_id`) REFERENCES `barangs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `fk_barangs_has_detail_pelanggans_detail_pelanggans1` FOREIGN KEY (`detail_pelanggan_id`) REFERENCES `detail_pelanggans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `history_request_orders`
+--
+ALTER TABLE `history_request_orders`
+  ADD CONSTRAINT `fk_history_request_orders_detail_pelanggans1` FOREIGN KEY (`detail_pelanggan_id`) REFERENCES `detail_pelanggans` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `fk_history_request_orders_request_orders1` FOREIGN KEY (`request_order_id`) REFERENCES `request_orders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Constraints for table `pelanggans`

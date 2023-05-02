@@ -156,10 +156,13 @@
             `;
             if (datum['gambar'] != null) {
               row += `
-              <button type="button" class="btn btn-danger btn-sm m-0 px-3 delete-button" onClick="deleteModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-trash-alt"></i></button>
+              <button type="button" class="btn btn-warning btn-sm m-0 px-3 delete-button" onClick="deleteModal(${datum['id']},'${datum['kode']}')"><i class="fas fa-file-excel"></i></button>
             `;
             }
-            row += '</td>';
+            row += `
+              <button type="button" class="btn btn-danger btn-sm m-0 px-3 edit-button" onClick="deactivateModal('${datum['id']}','${datum['kode']}')"><i class="fas fa-trash-alt"></i></button>
+            </td>
+            `;
             row += `</tr>`;
             body += row;
           });
@@ -176,7 +179,7 @@
           $('.table-container').html(html);
 
           // Set datatable
-          $('#datatable').dataTable({
+          const datatable = $('#datatable').DataTable({
             initComplete: function() {
               this.api().columns().every(function() {
                 var column = this;
@@ -333,6 +336,7 @@
 
       // Get the form data
       const formData = new FormData(document.getElementById('input-form'));
+      formData.append('aktif', 1);
 
       // Send the AJAX request
       $.ajax({
@@ -612,7 +616,64 @@
         }
       });
     })
+  }
 
+  const deactivateModal = (id, kode) => {
+    let modalDelete = `
+          <div class="modal fade" id="modalNonaktif" tabindex="-1" data-focus="false" role="dialog" aria-labelledby="modalNonaktifTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <form id="delete-form">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Nonaktifkan Barang ${kode}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                  <h2>Apakah Anda yakin akan menonaktifkan barang ${kode}?</h2>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-ban mr-2"></i>Batal</button>
+                    <button type="submit" class="btn btn-danger" id="simpan-button"><i class="fas fa-trash mr-2"></i>Hapus</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          `;
+    $('.modal-container').html(modalDelete);
+    $('#modalNonaktif').modal('show');
+
+    $('#delete-form').submit(event => {
+      event.preventDefault();
+
+      // Get the form data
+      const formData = {
+        'id': id,
+      };
+
+      // Send the AJAX request
+      $.ajax({
+        type: 'POST',
+        url: './api/barang_deactivate.php',
+        data: formData,
+        success: async response => {
+          response = JSON.parse(response);
+          $('#modalNonaktif').modal('hide');
+          $(".modal-backdrop").remove();
+          if (response.success) {
+            showAlert('success', response.message);
+          } else {
+            showAlert('danger', response.message);
+          }
+          await loadPage();
+        },
+        error: (jqXHR, textStatus, errorThrown) => {
+          console.log(textStatus, errorThrown);
+        }
+      });
+    })
   }
 </script>
 
